@@ -1145,12 +1145,210 @@
             function closeMembershipModal(){ document.getElementById('membershipModalOverlay').style.display='none'; }
 
             // ---------- CHARTS ----------
-            let chartInstances = {};
-            function destroyCharts() { Object.values(chartInstances).forEach(c => c.destroy()); chartInstances = {}; }
-            function drawIncomeChart(monthlyData) { /* ... misma implementación ... */ }
-            function drawMembershipChart() { /* ... */ }
-            function drawExpirationChart() { /* ... */ }
-            function renderReport(type) { /* ... misma lógica que antes, usando appData ... */ }
+            // ---------- CHARTS ----------
+let chartInstances = {};
+
+function destroyCharts() {
+    Object.values(chartInstances).forEach(c => c.destroy());
+    chartInstances = {};
+}
+
+function drawIncomeChart(monthlyData) {
+    const months = Object.keys(monthlyData).sort();
+    const totals = months.map(m => monthlyData[m].total);
+    const ctx = document.getElementById('incomeChartCanvas')?.getContext('2d');
+    if (!ctx) return;
+    if (chartInstances.income) chartInstances.income.destroy();
+    chartInstances.income = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months.map(m => {
+                const [y, mo] = m.split('-');
+                return new Date(y, mo - 1).toLocaleDateString('es', { month: 'short', year: 'numeric' });
+            }),
+            datasets: [{
+                label: 'Ingresos ($)',
+                data: totals,
+                borderColor: '#f04e30',
+                backgroundColor: 'rgba(240,78,48,0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#fff',
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#a0aec0' } } },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
+                x: { ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } }
+            }
+        }
+    });
+}
+
+function drawMembershipChart() {
+    const active = appData.members.filter(m => m.status === 'active').length;
+    const expiring = appData.members.filter(m => m.status === 'expiring').length;
+    const expired = appData.members.filter(m => m.status === 'expired').length;
+    const ctx = document.getElementById('membershipChartCanvas')?.getContext('2d');
+    if (!ctx) return;
+    if (chartInstances.membership) chartInstances.membership.destroy();
+    chartInstances.membership = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Activos', 'Por Vencer', 'Vencidos'],
+            datasets: [{
+                data: [active, expiring, expired],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                borderColor: '#1c1c30',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom', labels: { color: '#a0aec0', padding: 20 } } }
+        }
+    });
+}
+
+function drawExpirationChart() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const future = new Date(today); future.setDate(future.getDate() + 30);
+    const weeks = {};
+    appData.members.forEach(m => {
+        const end = new Date(m.endDate);
+        if (end <= future) {
+            const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+            const week = Math.ceil(diffDays / 7);
+            const label = week <= 0 ? 'Vencido' : `Semana ${week}`;
+            if (!weeks[label]) weeks[label] = 0;
+            weeks[label]++;
+        }
+    });
+    const labels = Object.keys(weeks).sort((a, b) => {
+        if (a === 'Vencido') return -1;
+        if (b === 'Vencido') return 1;
+        return parseInt(a) - parseInt(b);
+    });
+    const data = labels.map(l => weeks[l]);
+    const ctx = document.getElementById('expirationChartCanvas')?.getContext('2d');
+    if (!ctx) return;
+    if (chartInstances.expiration) chartInstances.expiration.destroy();
+    chartInstances.expiration = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Membresías por vencer',
+                data: data,
+                backgroundColor: labels.map(l => l === 'Vencido' ? '#ef4444' : '#f59e0b'),
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#a0aec0' }, grid: { color: '#2a2a40' } },
+                x: { ticks: { color: '#a0aec0' }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+function renderReport(type) {
+    if (!appData.members || !appData.payments) return;
+    destroyCharts();
+    const container = document.getElementById('reportContent');
+    let html = '';
+
+    if (type === 'income') {
+        const monthly = {};
+        appData.payments.forEach(p => {
+            const d = new Date(p.date);
+            const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+            if (!monthly[key]) monthly[key] = { total: 0, count: 0 };
+            monthly[key].total += p.amount;
+            monthly[key].count++;
+        });
+        html = `
+            <div class="chart-container">
+                <canvas id="incomeChartCanvas" style="max-height: 350px;"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2>💰 Ingresos por Mes</h2></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead>
+                        <tbody>
+                            ${Object.entries(monthly).sort((a,b) => b[0].localeCompare(a[0])).map(([k,v]) =>
+                                `<tr><td>${k}</td><td>${v.count}</td><td>${formatCurrency(v.total)}</td></tr>`
+                            ).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+        container.innerHTML = html;
+        setTimeout(() => drawIncomeChart(monthly), 50);
+    }
+    else if (type === 'membership') {
+        html = `
+            <div class="chart-container">
+                <canvas id="membershipChartCanvas" style="max-height: 350px;"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2>📋 Estado de Membresías</h2></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>Miembro</th><th>Tipo</th><th>Vence</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            ${appData.members.map(m =>
+                                `<tr class="${m.status==='expired'?'row-danger':m.status==='expiring'?'row-warning':''}">
+                                    <td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td>
+                                    <td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td>
+                                </tr>`
+                            ).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+        container.innerHTML = html;
+        setTimeout(() => drawMembershipChart(), 50);
+    }
+    else if (type === 'expiration') {
+        const future = new Date();
+        future.setDate(future.getDate() + 30);
+        const upcoming = appData.members.filter(m => new Date(m.endDate) <= future)
+            .sort((a,b) => new Date(a.endDate) - new Date(b.endDate));
+        html = `
+            <div class="chart-container">
+                <canvas id="expirationChartCanvas" style="max-height: 350px;"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2>⚠️ Vencimientos Próximos (30 días)</h2></div>
+                <div class="card-body">
+                    <table>
+                        <thead><tr><th>Miembro</th><th>Vence</th><th>Días</th></tr></thead>
+                        <tbody>
+                            ${upcoming.map(m => {
+                                const diff = Math.ceil((new Date(m.endDate) - new Date()) / (1000*60*60*24));
+                                return `<tr class="${diff<0?'row-danger':'row-warning'}">
+                                    <td>${m.name}</td><td>${formatDate(m.endDate)}</td>
+                                    <td>${diff<0?'Vencido hace '+Math.abs(diff):diff}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+        container.innerHTML = html;
+        setTimeout(() => drawExpirationChart(), 50);
+    }
+}
 
             // ---------- GLOBAL EXPOSURES ----------
             window.openMemberModal = openMemberModal;
