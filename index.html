@@ -1274,6 +1274,7 @@ function renderReport(type) {
             monthly[key].total += p.amount;
             monthly[key].count++;
         });
+
         html = `
             <div class="chart-container">
                 <canvas id="incomeChartCanvas" style="max-height: 350px;"></canvas>
@@ -1281,6 +1282,7 @@ function renderReport(type) {
             <div class="card">
                 <div class="card-header"><h2>💰 Ingresos por Mes</h2></div>
                 <div class="card-body">
+                    ${Object.keys(monthly).length === 0 ? '<div class="empty-state">📭 No hay ingresos registrados.</div>' : `
                     <table>
                         <thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead>
                         <tbody>
@@ -1288,7 +1290,7 @@ function renderReport(type) {
                                 `<tr><td>${k}</td><td>${v.count}</td><td>${formatCurrency(v.total)}</td></tr>`
                             ).join('')}
                         </tbody>
-                    </table>
+                    </table>`}
                 </div>
             </div>`;
         container.innerHTML = html;
@@ -1302,6 +1304,7 @@ function renderReport(type) {
             <div class="card">
                 <div class="card-header"><h2>📋 Estado de Membresías</h2></div>
                 <div class="card-body">
+                    ${appData.members.length === 0 ? '<div class="empty-state">👤 No hay miembros registrados.</div>' : `
                     <table>
                         <thead><tr><th>Miembro</th><th>Tipo</th><th>Vence</th><th>Estado</th></tr></thead>
                         <tbody>
@@ -1312,7 +1315,7 @@ function renderReport(type) {
                                 </tr>`
                             ).join('')}
                         </tbody>
-                    </table>
+                    </table>`}
                 </div>
             </div>`;
         container.innerHTML = html;
@@ -1323,6 +1326,7 @@ function renderReport(type) {
         future.setDate(future.getDate() + 30);
         const upcoming = appData.members.filter(m => new Date(m.endDate) <= future)
             .sort((a,b) => new Date(a.endDate) - new Date(b.endDate));
+
         html = `
             <div class="chart-container">
                 <canvas id="expirationChartCanvas" style="max-height: 350px;"></canvas>
@@ -1330,6 +1334,7 @@ function renderReport(type) {
             <div class="card">
                 <div class="card-header"><h2>⚠️ Vencimientos Próximos (30 días)</h2></div>
                 <div class="card-body">
+                    ${upcoming.length === 0 ? '<div class="empty-state">✅ No hay vencimientos próximos.</div>' : `
                     <table>
                         <thead><tr><th>Miembro</th><th>Vence</th><th>Días</th></tr></thead>
                         <tbody>
@@ -1341,7 +1346,7 @@ function renderReport(type) {
                                 </tr>`;
                             }).join('')}
                         </tbody>
-                    </table>
+                    </table>`}
                 </div>
             </div>`;
         container.innerHTML = html;
