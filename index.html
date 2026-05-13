@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bee-GymPro - Gestión de Gimnasio</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-dark: #0f0f1a;
@@ -515,6 +513,89 @@
             padding: 16px;
             margin-bottom: 20px;
         }
+        
+        /* Estilos para impresión */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .sidebar, .topbar, .member-selector .btn, .card-header .btn, .btn-primary, .btn-outline, .btn-sm, .form-actions, .modal-overlay {
+                display: none !important;
+            }
+            .main-content {
+                margin: 0;
+                padding: 0;
+            }
+            .content-area {
+                padding: 0;
+                margin: 0;
+            }
+            .card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                border: 1px solid #ddd;
+                margin-bottom: 20px;
+            }
+            .metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+            .metric-card {
+                border: 1px solid #ddd;
+                background: white;
+            }
+            .metric-value {
+                color: #333;
+            }
+            table {
+                font-size: 10pt;
+            }
+            table th {
+                background: #f0f0f0;
+                color: #333;
+            }
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                border-bottom: 2px solid #f04e30;
+            }
+            .print-footer {
+                display: block !important;
+                text-align: center;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+                font-size: 9pt;
+                color: #666;
+            }
+            .progress-trend {
+                display: none;
+            }
+        }
+
+        .print-header {
+            display: none;
+        }
+        .print-footer {
+            display: none;
+        }
+
+        /* Estilos para gráficos de evolución */
+        .evolution-chart {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .evolution-chart canvas {
+            max-height: 300px;
+        }
 
         /* AUTH SCREEN */
         .auth-overlay {
@@ -633,8 +714,7 @@
                 min-width: 60px;
             }
             .sidebar-logo .logo-text,
-            .sidebar-nav button span:not(.nav-icon),
-            .sidebar-footer {
+            .sidebar-nav button span:not(.nav-icon) {
                 display: none;
             }
         }
@@ -730,7 +810,7 @@
                     <div class="card"><div class="card-header"><h2>👥 Lista de Miembros</h2><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="memberSearch" placeholder="🔍 Buscar..." style="width:180px;padding:8px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:#fff;"><select id="memberFilterStatus"><option value="all">Todos</option><option value="active">Activos</option><option value="expiring">Por vencer</option><option value="expired">Vencidos</option></select><button class="btn btn-primary" onclick="openMemberModal()">+ Nuevo</button></div></div><div class="card-body"><table><thead><tr><th>Nombre</th><th>Email</th><th>Tipo</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="membersTable"></tbody></table><div class="empty-state" id="noMembersMsg">👤 Sin miembros.</div></div></div>
                 </section>
                 <section class="section" id="section-payments">
-                    <div class="card"><div class="card-header"><h2>💳 Registro de Pagos</h2><button class="btn btn-primary" onclick="openPaymentModal()">+ Nuevo</button></div><div class="card-body"><table><thead><tr><th>Miembro</th><th>Monto</th><th>Fecha</th><th>Método</th><th>Acciones</th></tr></thead><tbody id="paymentsTable"></tbody></table><div class="empty-state" id="noPaymentsTableMsg">💳 Sin pagos.</div></div></div>
+                    <div class="card"><div class="card-header"><h2>💳 Registro de Pagos</h2><button class="btn btn-primary" onclick="openPaymentModal()">+ Nuevo</button></div><div class="card-body"><tr><thead><tr><th>Miembro</th><th>Monto</th><th>Fecha</th><th>Método</th><th>Acciones</th></tr></thead><tbody id="paymentsTable"></tbody>}</div></div>
                 </section>
                 <section class="section" id="section-memberships">
                     <div class="card"><div class="card-header"><h2>🏷️ Tipos de Membresía</h2><button class="btn btn-primary" onclick="openMembershipModal()">+ Nuevo Tipo</button></div><div class="card-body"><table><thead><tr><th>Nombre</th><th>1 Mes</th><th>3 Meses</th><th>6 Meses</th><th>12 Meses</th><th>Acciones</th></tr></thead><tbody id="membershipsTable"></tbody></table><div class="empty-state" id="noMembershipsMsg">🏷️ No hay tipos de membresía definidos.</div></div></div>
@@ -744,8 +824,9 @@
                                     <option value="">-- Seleccionar miembro --</option>
                                 </select>
                             </div>
-                            <div class="form-group" style="display: flex; align-items: flex-end;">
-                                <button class="btn btn-primary" onclick="openMetricModal()" style="width:100%;">+ Registrar Nueva Medición</button>
+                            <div class="form-group" style="display: flex; gap: 8px; align-items: flex-end;">
+                                <button class="btn btn-primary" onclick="openMetricModal()" style="flex:1;">+ Registrar Medición</button>
+                                <button class="btn btn-success" onclick="printMemberMetrics()" style="flex:1;">🖨️ Imprimir Reporte</button>
                             </div>
                         </div>
                     </div>
@@ -821,6 +902,7 @@
             let supabase;
             let currentUser = null;
             let appData = { memberships: [], members: [], payments: [], metrics: [] };
+            let evolutionCharts = {};
 
             function initSupabase() {
                 if (window.supabase && window.supabase.createClient) {
@@ -867,7 +949,6 @@
                     fetchData('payments'),
                     fetchData('metrics')
                 ]);
-                // Convertir precios de memberships
                 appData.memberships = memberships.map(mt => ({
                     id: mt.id,
                     name: mt.name,
@@ -1213,7 +1294,7 @@
                 });
             }
 
-            // ---------- RENDER ----------
+            // ---------- RENDER DASHBOARD ----------
             function renderDashboard() {
                 const members = appData.members, payments = appData.payments;
                 const today = new Date(); today.setHours(0,0,0,0);
@@ -1238,11 +1319,12 @@
                     tbody.innerHTML = alertList.map(m=>{
                         const end = new Date(m.endDate); const diff = Math.ceil((end-today)/(1000*60*60*24));
                         const rowCls = diff<0?'row-danger':'row-warning';
-                        return `<tr class="${rowCls}"><tr>${m.name}</td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td>${diff<0?'Vencido hace '+Math.abs(diff)+' días':diff+' días'}</td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td><button class="btn btn-sm btn-warning" onclick="quickRenew('${m.id}')">🔄</button></tr>`;
+                        return `<tr class="${rowCls}"><td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td>${diff<0?'Vencido hace '+Math.abs(diff)+' días':diff+' días'}</td><td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td><td><button class="btn btn-sm btn-warning" onclick="quickRenew('${m.id}')">🔄</button></td></tr>`;
                     }).join('');
                 }
                 const recent = [...payments].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
                 document.getElementById('recentPaymentsTable').innerHTML = recent.length? recent.map(p=>`<tr><td>${getMemberById(p.memberId)?.name||'?'}</td><td>${formatCurrency(p.amount)}</td><td>${formatDate(p.date)}</td><td>${p.paymentMethod}</td></tr>`).join('') : '';
+                document.getElementById('noPaymentsMsg').style.display = recent.length ? 'none' : 'block';
             }
 
             function getMemberById(id) { return appData.members.find(m=>m.id===id); }
@@ -1261,6 +1343,7 @@
                     const cls = m.status==='expired'?'row-danger':m.status==='expiring'?'row-warning':'';
                     return `<tr class="${cls}"><td>${m.name}</td><td>${m.email||'-'}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td><td><button class="btn btn-sm btn-info" onclick="editMember('${m.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteMember('${m.id}')">🗑️</button></td></tr>`;
                 }).join('');
+                document.getElementById('noMembersMsg').style.display = list.length ? 'none' : 'block';
             }
 
             function openMemberModal(id=null) {
@@ -1319,6 +1402,7 @@
                 const tbody = document.getElementById('paymentsTable');
                 const list = [...appData.payments].sort((a,b)=>new Date(b.date)-new Date(a.date));
                 tbody.innerHTML = list.length? list.map(p=>`<tr><td>${getMemberById(p.memberId)?.name||'?'}</td><td>${formatCurrency(p.amount)}</td><td>${formatDate(p.date)}</td><td>${p.paymentMethod}</td><td><button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">🗑️</button></td></tr>`).join('') : '';
+                document.getElementById('noPaymentsTableMsg').style.display = list.length ? 'none' : 'block';
             }
 
             function openPaymentModal(){
@@ -1336,6 +1420,7 @@
             function renderMemberships() {
                 const tbody = document.getElementById('membershipsTable');
                 tbody.innerHTML = appData.memberships.map(mt=>`<tr><td><strong>${mt.name}</strong></td><td>${formatCurrency(mt.prices[1])}</td><td>${formatCurrency(mt.prices[3])}</td><td>${formatCurrency(mt.prices[6])}</td><td>${formatCurrency(mt.prices[12])}</td><td><button class="btn btn-sm btn-info" onclick="editMembership('${mt.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteMembership('${mt.id}')">🗑️</button></td></tr>`).join('');
+                document.getElementById('noMembershipsMsg').style.display = appData.memberships.length ? 'none' : 'block';
             }
 
             function openMembershipModal(id=null){
@@ -1402,7 +1487,7 @@
                 };
                 
                 const formatMetric = (value, unit, current, prev) => {
-                    if(!value) return '--';
+                    if(!value && value !== 0) return '--';
                     const trend = getTrend(current, prev);
                     return `<span class="metric-value">${value} ${unit}</span> <span class="progress-trend ${trend.class}">${trend.icon}</span>`;
                 };
@@ -1455,6 +1540,15 @@
                             <div class="metric-date">Última: ${formatDate(latest.date)}</div>
                         </div>
                     </div>
+                    <div class="evolution-chart">
+                        <div class="card-header">
+                            <h2>📈 Evolución de Métricas</h2>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="weightEvolutionChart" style="max-height: 300px; margin-bottom: 30px;"></canvas>
+                            <canvas id="bodyMeasurementsChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
                     <div class="card" style="margin-top:20px;">
                         <div class="card-header">
                             <h2>📋 Historial de Mediciones</h2>
@@ -1487,6 +1581,255 @@
                     </div>
                 `;
                 document.getElementById('metricsDisplay').innerHTML = metricsHtml;
+                
+                // Crear gráficos de evolución
+                setTimeout(() => {
+                    createEvolutionCharts(memberMetrics);
+                }, 100);
+            }
+
+            function createEvolutionCharts(metrics) {
+                const sortedMetrics = [...metrics].sort((a,b) => new Date(a.date) - new Date(b.date));
+                const dates = sortedMetrics.map(m => formatDate(m.date));
+                const weights = sortedMetrics.map(m => m.weight || null);
+                const chests = sortedMetrics.map(m => m.chest || null);
+                const arms = sortedMetrics.map(m => m.arm || null);
+                const waists = sortedMetrics.map(m => m.waist || null);
+                
+                // Gráfico de peso
+                const weightCtx = document.getElementById('weightEvolutionChart')?.getContext('2d');
+                if (weightCtx && evolutionCharts.weight) evolutionCharts.weight.destroy();
+                if (weightCtx) {
+                    evolutionCharts.weight = new Chart(weightCtx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Peso (kg)',
+                                data: weights,
+                                borderColor: '#f04e30',
+                                backgroundColor: 'rgba(240,78,48,0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#fff',
+                                pointRadius: 5,
+                                pointHoverRadius: 8,
+                                tension: 0.3,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { labels: { color: '#a0aec0' } },
+                                title: { display: true, text: 'Evolución de Peso', color: '#e2e8f0', font: { size: 14 } }
+                            },
+                            scales: {
+                                y: { beginAtZero: false, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
+                                x: { ticks: { color: '#a0aec0', rotation: 45 }, grid: { color: '#2a2a40' } }
+                            }
+                        }
+                    });
+                }
+                
+                // Gráfico de medidas corporales
+                const measuresCtx = document.getElementById('bodyMeasurementsChart')?.getContext('2d');
+                if (measuresCtx && evolutionCharts.measures) evolutionCharts.measures.destroy();
+                if (measuresCtx) {
+                    evolutionCharts.measures = new Chart(measuresCtx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [
+                                { label: 'Pecho (cm)', data: chests, borderColor: '#10b981', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4 },
+                                { label: 'Brazo (cm)', data: arms, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4 },
+                                { label: 'Abdomen (cm)', data: waists, borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4 }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { labels: { color: '#a0aec0' } },
+                                title: { display: true, text: 'Evolución de Medidas Corporales', color: '#e2e8f0', font: { size: 14 } }
+                            },
+                            scales: {
+                                y: { beginAtZero: false, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
+                                x: { ticks: { color: '#a0aec0', rotation: 45 }, grid: { color: '#2a2a40' } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Función para imprimir métricas
+            function printMemberMetrics() {
+                const memberId = document.getElementById('metricsMemberSelect').value;
+                if(!memberId) {
+                    showToast('Primero selecciona un miembro', 'error');
+                    return;
+                }
+                
+                const member = getMemberById(memberId);
+                const memberMetrics = appData.metrics.filter(m => m.memberId === memberId).sort((a,b) => new Date(a.date) - new Date(b.date));
+                
+                if(memberMetrics.length === 0) {
+                    showToast('No hay métricas registradas para este miembro', 'error');
+                    return;
+                }
+                
+                // Crear contenido para impresión
+                const printContent = document.createElement('div');
+                printContent.className = 'print-content';
+                printContent.innerHTML = `
+                    <div class="print-header">
+                        <h1 style="color: #f04e30; margin-bottom: 10px;">Bee-GymPro - Reporte de Métricas</h1>
+                        <h2 style="color: #333;">${member.name}</h2>
+                        <p style="color: #666;">Fecha de emisión: ${new Date().toLocaleDateString('es-MX')}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #f04e30; border-bottom: 2px solid #f04e30; padding-bottom: 8px; margin-bottom: 20px;">📊 Resumen del Miembro</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Email</th><td style="padding: 10px; border: 1px solid #ddd;">${member.email || '-'}</td></tr>
+                            <tr><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Teléfono</th><td style="padding: 10px; border: 1px solid #ddd;">${member.phone || '-'}</td></tr>
+                            <tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Membresía</th><td style="padding: 10px; border: 1px solid #ddd;">${member.membershipType}</td></tr>
+                            <tr><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Fecha de Ingreso</th><td style="padding: 10px; border: 1px solid #ddd;">${formatDate(member.joinDate)}</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #f04e30; border-bottom: 2px solid #f04e30; padding-bottom: 8px; margin-bottom: 20px;">📏 Últimas Mediciones</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f04e30; color: white;">
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Medición</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Valor Actual</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Fecha</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Cambio vs Anterior</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${getComparisonTable(memberMetrics)}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #f04e30; border-bottom: 2px solid #f04e30; padding-bottom: 8px; margin-bottom: 20px;">📋 Historial Completo de Mediciones</h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 11pt;">
+                            <thead>
+                                <tr style="background: #f0f0f0;">
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Fecha</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Peso(kg)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Altura(cm)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Pecho(cm)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Brazo(cm)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Cadera(cm)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Abdomen(cm)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Muslo(cm)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Pantorrilla(cm)</th>
+                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Espalda(cm)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${memberMetrics.map(m => `
+                                    <tr>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${formatDate(m.date)}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.weight || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.height || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.chest || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.arm || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.hip || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.waist || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.thigh || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.calf || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.backWidth || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="print-footer">
+                        <p>Reporte generado por Bee-GymPro - Sistema de Gestión de Gimnasio</p>
+                        <p>© ${new Date().getFullYear()} Bee-GymPro - Todos los derechos reservados</p>
+                    </div>
+                `;
+                
+                // Agregar estilos para impresión
+                const printStyles = document.createElement('style');
+                printStyles.textContent = `
+                    @media print {
+                        body * {
+                            visibility: hidden;
+                        }
+                        .print-content, .print-content * {
+                            visibility: visible;
+                        }
+                        .print-content {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            padding: 20px;
+                        }
+                        table {
+                            page-break-inside: avoid;
+                        }
+                        h3 {
+                            page-break-after: avoid;
+                        }
+                    }
+                `;
+                
+                document.body.appendChild(printStyles);
+                document.body.appendChild(printContent);
+                
+                // Imprimir
+                window.print();
+                
+                // Limpiar
+                setTimeout(() => {
+                    document.body.removeChild(printStyles);
+                    document.body.removeChild(printContent);
+                }, 100);
+            }
+            
+            function getComparisonTable(metrics) {
+                if(metrics.length === 0) return '<tr><td colspan="4">No hay datos</td></tr>';
+                
+                const latest = metrics[0];
+                const previous = metrics[1];
+                
+                const getChange = (current, prev) => {
+                    if(!prev || prev === 0 || !current) return '--';
+                    const diff = current - prev;
+                    const symbol = diff > 0 ? '▲' : diff < 0 ? '▼' : '•';
+                    const color = diff > 0 ? 'green' : diff < 0 ? 'red' : 'gray';
+                    return `${symbol} ${Math.abs(diff).toFixed(1)} (${((diff/prev)*100).toFixed(1)}%)`;
+                };
+                
+                const measurements = [
+                    { name: 'Peso', current: latest.weight, previous: previous?.weight, unit: 'kg' },
+                    { name: 'Altura', current: latest.height, previous: previous?.height, unit: 'cm' },
+                    { name: 'Pecho', current: latest.chest, previous: previous?.chest, unit: 'cm' },
+                    { name: 'Brazo', current: latest.arm, previous: previous?.arm, unit: 'cm' },
+                    { name: 'Cadera', current: latest.hip, previous: previous?.hip, unit: 'cm' },
+                    { name: 'Abdomen', current: latest.waist, previous: previous?.waist, unit: 'cm' },
+                    { name: 'Muslo', current: latest.thigh, previous: previous?.thigh, unit: 'cm' },
+                    { name: 'Pantorrilla', current: latest.calf, previous: previous?.calf, unit: 'cm' },
+                    { name: 'Espalda', current: latest.backWidth, previous: previous?.backWidth, unit: 'cm' }
+                ];
+                
+                return measurements.map(m => `
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>${m.name}</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${m.current || '-'} ${m.unit}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${formatDate(latest.date)}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${getChange(m.current, m.previous)}</td>
+                    </tr>
+                `).join('');
             }
 
             function openMetricModal(metricId = null) {
@@ -1788,6 +2131,7 @@
             window.deleteMetric = async (id) => {
                 if(confirm('¿Eliminar esta medición?')) { await deleteMetric(id); showToast('Medición eliminada','success'); }
             };
+            window.printMemberMetrics = printMemberMetrics;
 
             // ---------- EVENT LISTENERS ----------
             function setupEventListeners() {
@@ -1898,7 +2242,6 @@
             }
 
             async function initApp() {
-                document.getElementById('currentDate').textContent = new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
                 populateMemberSelect(); populateMembershipTypeSelect(); populateMetricsMemberSelect();
                 renderDashboard();
             }
