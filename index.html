@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bee-GymPro - Gestión de Gimnasio</title>
+    <title>GymPro - Gestión de Gimnasio</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -270,9 +270,7 @@
         }
         .card-body {
             overflow-x: auto;
-        }
-        .card-body.padded {
-            padding: 20px;
+            padding: 16px;
         }
         table {
             width: 100%;
@@ -513,8 +511,13 @@
             padding: 16px;
             margin-bottom: 20px;
         }
-        
-        /* Estilos para impresión */
+        .evolution-chart {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-top: 20px;
+        }
         @media print {
             body {
                 background: white;
@@ -577,27 +580,12 @@
                 display: none;
             }
         }
-
         .print-header {
             display: none;
         }
         .print-footer {
             display: none;
         }
-
-        /* Estilos para gráficos de evolución */
-        .evolution-chart {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .evolution-chart canvas {
-            max-height: 300px;
-        }
-
-        /* AUTH SCREEN */
         .auth-overlay {
             position: fixed;
             inset: 0;
@@ -692,7 +680,6 @@
             margin-bottom: 14px;
             display: none;
         }
-
         @media (max-width: 900px) {
             .sidebar {
                 width: 200px;
@@ -727,7 +714,7 @@
         <div class="auth-container">
             <div class="auth-logo">
                 <div class="logo-icon">G</div>
-                <h2>Bee-Gym<span>Pro</span></h2>
+                <h2>Gym<span>Pro</span></h2>
                 <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">Sistema de Gestión</p>
             </div>
             <div class="auth-tabs">
@@ -769,12 +756,12 @@
         </div>
     </div>
 
-    <!-- APP (oculta hasta login) -->
+    <!-- APP -->
     <div id="appContainer" style="display:none;width:100%;">
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <div class="logo-icon">G</div>
-                <div class="logo-text">Bee-Gym<span>Pro</span></div>
+                <div class="logo-text">Gym<span>Pro</span></div>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section">Principal</div>
@@ -798,23 +785,77 @@
                 </div>
             </div>
             <div class="content-area">
+                <!-- Dashboard Section -->
                 <section class="section active" id="section-dashboard">
                     <div class="stats-grid" id="dashboardStats"></div>
-                    <div class="card" id="expiringAlertsCard">
+                    <div class="card">
                         <div class="card-header"><h2>⚠️ Membresías por Vencer (7 días)</h2><span id="expiringCountLabel" style="font-size:0.8rem;color:var(--text-muted);"></span></div>
-                        <div class="card-body"><table><thead><tr><th>Miembro</th><th>Tipo</th><th>Vencimiento</th><th>Días</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="expiringAlertsTable"></tbody></table><div class="empty-state" id="noAlertsMsg" style="display:none;">✅ No hay membresías por vencer.</div></div>
+                        <div class="card-body">
+                            <table><thead><tr><th>Miembro</th><th>Tipo</th><th>Vencimiento</th><th>Días</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="expiringAlertsTable"></tbody></table>
+                            <div class="empty-state" id="noAlertsMsg" style="display:none;">✅ No hay membresías por vencer.</div>
+                        </div>
                     </div>
-                    <div class="card"><div class="card-header"><h2>🕐 Últimos Pagos</h2></div><div class="card-body"><table><thead><tr><th>Miembro</th><th>Monto</th><th>Fecha</th><th>Método</th></tr></thead><tbody id="recentPaymentsTable"></tbody></table><div class="empty-state" id="noPaymentsMsg" style="display:none;">💳 Sin pagos registrados.</div></div></div>
+                    <div class="card">
+                        <div class="card-header"><h2>🕐 Últimos Pagos</h2></div>
+                        <div class="card-body">
+                            <table><thead><tr><th>Miembro</th><th>Monto</th><th>Fecha</th><th>Método</th></tr></thead><tbody id="recentPaymentsTable"></tbody></table>
+                            <div class="empty-state" id="noPaymentsMsg" style="display:none;">💳 Sin pagos registrados.</div>
+                        </div>
+                    </div>
                 </section>
+
+                <!-- Members Section -->
                 <section class="section" id="section-members">
-                    <div class="card"><div class="card-header"><h2>👥 Lista de Miembros</h2><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="memberSearch" placeholder="🔍 Buscar..." style="width:180px;padding:8px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:#fff;"><select id="memberFilterStatus"><option value="all">Todos</option><option value="active">Activos</option><option value="expiring">Por vencer</option><option value="expired">Vencidos</option></select><button class="btn btn-primary" onclick="openMemberModal()">+ Nuevo</button></div></div><div class="card-body"><table><thead><tr><th>Nombre</th><th>Email</th><th>Tipo</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="membersTable"></tbody></table><div class="empty-state" id="noMembersMsg">👤 Sin miembros.</div></div></div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>👥 Lista de Miembros</h2>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <input type="text" id="memberSearch" placeholder="🔍 Buscar..." style="width:180px;padding:8px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:#fff;">
+                                <select id="memberFilterStatus">
+                                    <option value="all">Todos</option>
+                                    <option value="active">Activos</option>
+                                    <option value="expiring">Por vencer</option>
+                                    <option value="expired">Vencidos</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="openMemberModal()">+ Nuevo</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table><thead><tr><th>Nombre</th><th>Email</th><th>Tipo</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="membersTable"></tbody></table>
+                            <div class="empty-state" id="noMembersMsg" style="display:none;">👤 Sin miembros registrados.</div>
+                        </div>
+                    </div>
                 </section>
+
+                <!-- Payments Section -->
                 <section class="section" id="section-payments">
-                    <div class="card"><div class="card-header"><h2>💳 Registro de Pagos</h2><button class="btn btn-primary" onclick="openPaymentModal()">+ Nuevo</button></div><div class="card-body"><tr><thead><tr><th>Miembro</th><th>Monto</th><th>Fecha</th><th>Método</th><th>Acciones</th></tr></thead><tbody id="paymentsTable"></tbody>}</div></div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>💳 Registro de Pagos</h2>
+                            <button class="btn btn-primary" onclick="openPaymentModal()">+ Nuevo</button>
+                        </div>
+                        <div class="card-body">
+                            <table><thead><tr><th>Miembro</th><th>Monto</th><th>Fecha</th><th>Método</th><th>Acciones</th></tr></thead><tbody id="paymentsTable"></tbody></table>
+                            <div class="empty-state" id="noPaymentsTableMsg" style="display:none;">💳 Sin pagos registrados.</div>
+                        </div>
+                    </div>
                 </section>
+
+                <!-- Memberships Section -->
                 <section class="section" id="section-memberships">
-                    <div class="card"><div class="card-header"><h2>🏷️ Tipos de Membresía</h2><button class="btn btn-primary" onclick="openMembershipModal()">+ Nuevo Tipo</button></div><div class="card-body"><table><thead><tr><th>Nombre</th><th>1 Mes</th><th>3 Meses</th><th>6 Meses</th><th>12 Meses</th><th>Acciones</th></tr></thead><tbody id="membershipsTable"></tbody></table><div class="empty-state" id="noMembershipsMsg">🏷️ No hay tipos de membresía definidos.</div></div></div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🏷️ Tipos de Membresía</h2>
+                            <button class="btn btn-primary" onclick="openMembershipModal()">+ Nuevo Tipo</button>
+                        </div>
+                        <div class="card-body">
+                            <table><thead><tr><th>Nombre</th><th>1 Mes</th><th>3 Meses</th><th>6 Meses</th><th>12 Meses</th><th>Acciones</th></tr></thead><tbody id="membershipsTable"></tbody></table>
+                            <div class="empty-state" id="noMembershipsMsg" style="display:none;">🏷️ No hay tipos de membresía definidos.</div>
+                        </div>
+                    </div>
                 </section>
+
+                <!-- Metrics Section -->
                 <section class="section" id="section-metrics">
                     <div class="member-selector">
                         <div class="form-row">
@@ -834,6 +875,8 @@
                         <div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>
                     </div>
                 </section>
+
+                <!-- Reports Section -->
                 <section class="section" id="section-reports">
                     <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
                         <button class="btn btn-outline active report-tab-btn" data-report="income">💰 Ingresos</button>
@@ -848,11 +891,68 @@
     </div>
 
     <!-- Modales -->
-    <div class="modal-overlay" id="memberModalOverlay" style="display:none;"><div class="modal"><h3 id="memberModalTitle">➕ Nuevo Miembro</h3><form id="memberForm"><input type="hidden" id="memberId"><div class="form-row"><div class="form-group"><label>Nombre *</label><input type="text" id="memberName" required></div><div class="form-group"><label>Email</label><input type="email" id="memberEmail"></div></div><div class="form-row"><div class="form-group"><label>Teléfono</label><input type="text" id="memberPhone"></div><div class="form-group"><label>Fecha Ingreso *</label><input type="date" id="memberJoinDate" required></div></div><div class="form-row"><div class="form-group"><label>Tipo Membresía *</label><select id="memberMembershipType" required></select></div><div class="form-group"><label>Duración *</label><select id="memberDuration" required><option value="">Seleccionar...</option><option value="1">Mensual</option><option value="3">Trimestral</option><option value="6">Semestral</option><option value="12">Anual</option></select></div></div><div class="form-group"><label>Precio ($)</label><input type="number" id="memberPrice" readonly style="font-weight:600;color:var(--accent);"></div><div class="form-actions"><button type="button" class="btn btn-outline" onclick="closeMemberModal()">Cancelar</button><button type="submit" class="btn btn-primary">💾 Guardar</button></div></form></div></div>
+    <div class="modal-overlay" id="memberModalOverlay" style="display:none;">
+        <div class="modal">
+            <h3 id="memberModalTitle">➕ Nuevo Miembro</h3>
+            <form id="memberForm">
+                <input type="hidden" id="memberId">
+                <div class="form-row">
+                    <div class="form-group"><label>Nombre *</label><input type="text" id="memberName" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="memberEmail"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Teléfono</label><input type="text" id="memberPhone"></div>
+                    <div class="form-group"><label>Fecha Ingreso *</label><input type="date" id="memberJoinDate" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Tipo Membresía *</label><select id="memberMembershipType" required></select></div>
+                    <div class="form-group"><label>Duración *</label><select id="memberDuration" required><option value="">Seleccionar...</option><option value="1">Mensual</option><option value="3">Trimestral</option><option value="6">Semestral</option><option value="12">Anual</option></select></div>
+                </div>
+                <div class="form-group"><label>Precio ($)</label><input type="number" id="memberPrice" readonly style="font-weight:600;color:var(--accent);"></div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" onclick="closeMemberModal()">Cancelar</button><button type="submit" class="btn btn-primary">💾 Guardar</button></div>
+            </form>
+        </div>
+    </div>
     
-    <div class="modal-overlay" id="paymentModalOverlay" style="display:none;"><div class="modal"><h3>💳 Registrar Pago</h3><form id="paymentForm"><input type="hidden" id="paymentId"><div class="form-group"><label>Miembro *</label><select id="paymentMember" required></select></div><div class="form-row"><div class="form-group"><label>Monto ($) *</label><input type="number" id="paymentAmount" required step="0.01"></div><div class="form-group"><label>Fecha *</label><input type="date" id="paymentDate" required></div></div><div class="form-row"><div class="form-group"><label>Método</label><select id="paymentMethod"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option></select></div><div class="form-group"><label>Tipo Membresía</label><select id="paymentMembershipType"></select></div></div><div class="form-group"><label>Notas</label><textarea id="paymentNotes" rows="2"></textarea></div><div class="form-group"><label><input type="checkbox" id="paymentRenew" checked> Renovar membresía automáticamente</label></div><div class="form-actions"><button type="button" class="btn btn-outline" onclick="closePaymentModal()">Cancelar</button><button type="submit" class="btn btn-success">✅ Registrar</button></div></form></div></div>
+    <div class="modal-overlay" id="paymentModalOverlay" style="display:none;">
+        <div class="modal">
+            <h3>💳 Registrar Pago</h3>
+            <form id="paymentForm">
+                <input type="hidden" id="paymentId">
+                <div class="form-group"><label>Miembro *</label><select id="paymentMember" required></select></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Monto ($) *</label><input type="number" id="paymentAmount" required step="0.01"></div>
+                    <div class="form-group"><label>Fecha *</label><input type="date" id="paymentDate" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Método</label><select id="paymentMethod"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option></select></div>
+                    <div class="form-group"><label>Tipo Membresía</label><select id="paymentMembershipType"></select></div>
+                </div>
+                <div class="form-group"><label>Notas</label><textarea id="paymentNotes" rows="2"></textarea></div>
+                <div class="form-group"><label><input type="checkbox" id="paymentRenew" checked> Renovar membresía automáticamente</label></div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" onclick="closePaymentModal()">Cancelar</button><button type="submit" class="btn btn-success">✅ Registrar</button></div>
+            </form>
+        </div>
+    </div>
     
-    <div class="modal-overlay" id="membershipModalOverlay" style="display:none;"><div class="modal"><h3 id="membershipModalTitle">➕ Nuevo Tipo de Membresía</h3><form id="membershipForm"><input type="hidden" id="membershipId"><div class="form-group"><label>Nombre *</label><input type="text" id="membershipName" required></div><div class="form-row"><div class="form-group"><label>1 Mes ($)</label><input type="number" id="membershipPrice1" required step="0.01" min="0"></div><div class="form-group"><label>3 Meses ($)</label><input type="number" id="membershipPrice3" required step="0.01" min="0"></div></div><div class="form-row"><div class="form-group"><label>6 Meses ($)</label><input type="number" id="membershipPrice6" required step="0.01" min="0"></div><div class="form-group"><label>12 Meses ($)</label><input type="number" id="membershipPrice12" required step="0.01" min="0"></div></div><div class="form-actions"><button type="button" class="btn btn-outline" onclick="closeMembershipModal()">Cancelar</button><button type="submit" class="btn btn-primary">💾 Guardar</button></div></form></div></div>
+    <div class="modal-overlay" id="membershipModalOverlay" style="display:none;">
+        <div class="modal">
+            <h3 id="membershipModalTitle">➕ Nuevo Tipo de Membresía</h3>
+            <form id="membershipForm">
+                <input type="hidden" id="membershipId">
+                <div class="form-group"><label>Nombre *</label><input type="text" id="membershipName" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>1 Mes ($)</label><input type="number" id="membershipPrice1" required step="0.01" min="0"></div>
+                    <div class="form-group"><label>3 Meses ($)</label><input type="number" id="membershipPrice3" required step="0.01" min="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>6 Meses ($)</label><input type="number" id="membershipPrice6" required step="0.01" min="0"></div>
+                    <div class="form-group"><label>12 Meses ($)</label><input type="number" id="membershipPrice12" required step="0.01" min="0"></div>
+                </div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" onclick="closeMembershipModal()">Cancelar</button><button type="submit" class="btn btn-primary">💾 Guardar</button></div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal de Métricas -->
     <div class="modal-overlay" id="metricModalOverlay" style="display:none;">
@@ -861,10 +961,7 @@
             <form id="metricForm">
                 <input type="hidden" id="metricId">
                 <input type="hidden" id="metricMemberId">
-                <div class="form-group">
-                    <label>Fecha de Medición *</label>
-                    <input type="date" id="metricDate" required>
-                </div>
+                <div class="form-group"><label>Fecha de Medición *</label><input type="date" id="metricDate" required></div>
                 <div class="form-row">
                     <div class="form-group"><label>Peso (kg)</label><input type="number" id="metricWeight" step="0.1" placeholder="kg"></div>
                     <div class="form-group"><label>Altura (cm)</label><input type="number" id="metricHeight" step="0.1" placeholder="cm"></div>
@@ -881,21 +978,14 @@
                     <div class="form-group"><label>Muslo (cm)</label><input type="number" id="metricThigh" step="0.5" placeholder="cm"></div>
                     <div class="form-group"><label>Pantorrilla (cm)</label><input type="number" id="metricCalf" step="0.5" placeholder="cm"></div>
                 </div>
-                <div class="form-group">
-                    <label>Ancho de Espalda (cm)</label>
-                    <input type="number" id="metricBackWidth" step="0.5" placeholder="cm">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeMetricModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">💾 Guardar Medición</button>
-                </div>
+                <div class="form-group"><label>Ancho de Espalda (cm)</label><input type="number" id="metricBackWidth" step="0.5" placeholder="cm"></div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" onclick="closeMetricModal()">Cancelar</button><button type="submit" class="btn btn-primary">💾 Guardar Medición</button></div>
             </form>
         </div>
     </div>
 
     <script>
         (function() {
-            // ---------- CONFIGURACIÓN SUPABASE ----------
             const SUPABASE_URL = 'https://sxjkxwlhsubpcxjhvsit.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4amt4d2xoc3VicGN4amh2c2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTc5NjUsImV4cCI6MjA5MzIzMzk2NX0.ShybixgoukfsLWsVXWHK7pUzYatMqa5wEo0HSZwWlxc';
 
@@ -913,7 +1003,6 @@
                 }
             }
 
-            // ---------- HELPERS ----------
             function getMembershipPrice(typeName, duration) {
                 const mt = appData.memberships.find(mt => mt.name === typeName);
                 return mt ? (mt.prices[duration] || 0) : 0;
@@ -933,7 +1022,6 @@
             function formatDate(d) { if(!d) return '-'; return new Date(d+'T00:00:00').toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'numeric'}); }
             function formatCurrency(v) { return '$'+parseFloat(v).toFixed(2); }
 
-            // ---------- SUPABASE CRUD ----------
             async function fetchData(table) {
                 if (!supabase) return [];
                 const { data, error } = await supabase.from(table).select('*').eq('user_id', currentUser.id);
@@ -1095,9 +1183,11 @@
                 renderMembers();
                 renderPayments();
                 populateMetricsMemberSelect();
-                if(document.getElementById('metricsMemberSelect').value == id) {
-                    document.getElementById('metricsMemberSelect').value = '';
-                    document.getElementById('metricsDisplay').innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
+                const metricsSelect = document.getElementById('metricsMemberSelect');
+                if(metricsSelect && metricsSelect.value == id) {
+                    metricsSelect.value = '';
+                    const metricsDisplay = document.getElementById('metricsDisplay');
+                    if(metricsDisplay) metricsDisplay.innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
                 }
             }
 
@@ -1131,7 +1221,6 @@
                 renderPayments();
             }
 
-            // ---------- CRUD MÉTRICAS ----------
             async function insertMetric(metric) {
                 const { data, error } = await supabase.from('metrics').insert({
                     user_id: currentUser.id,
@@ -1162,7 +1251,8 @@
                     calf: data.calf,
                     backWidth: data.back_width
                 });
-                if(document.getElementById('metricsMemberSelect').value == metric.memberId) {
+                const metricsSelect = document.getElementById('metricsMemberSelect');
+                if(metricsSelect && metricsSelect.value == metric.memberId) {
                     loadMemberMetrics();
                 }
             }
@@ -1183,7 +1273,8 @@
                 if (error) throw error;
                 const index = appData.metrics.findIndex(m => m.id === id);
                 if (index !== -1) appData.metrics[index] = { ...metric, id };
-                if(document.getElementById('metricsMemberSelect').value == metric.memberId) {
+                const metricsSelect = document.getElementById('metricsMemberSelect');
+                if(metricsSelect && metricsSelect.value == metric.memberId) {
                     loadMemberMetrics();
                 }
             }
@@ -1192,12 +1283,12 @@
                 const { error } = await supabase.from('metrics').delete().eq('id', id);
                 if (error) throw error;
                 appData.metrics = appData.metrics.filter(m => m.id !== id);
-                if(document.getElementById('metricsMemberSelect').value) {
+                const metricsSelect = document.getElementById('metricsMemberSelect');
+                if(metricsSelect && metricsSelect.value) {
                     loadMemberMetrics();
                 }
             }
 
-            // ---------- TOAST ----------
             function showToast(msg, type='info') {
                 const container = document.createElement('div');
                 container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;';
@@ -1210,16 +1301,17 @@
                 setTimeout(()=>{ toast.style.opacity='0'; toast.style.transition='opacity 0.3s'; setTimeout(()=>container.remove(),300); },3000);
             }
 
-            // ---------- AUTH ----------
             function showAuthError(msg) {
                 const el = document.getElementById('authError');
-                el.textContent = msg; el.style.display = 'block';
-                document.getElementById('authSuccess').style.display = 'none';
+                if(el) { el.textContent = msg; el.style.display = 'block'; }
+                const successEl = document.getElementById('authSuccess');
+                if(successEl) successEl.style.display = 'none';
             }
             function showAuthSuccess(msg) {
                 const el = document.getElementById('authSuccess');
-                el.textContent = msg; el.style.display = 'block';
-                document.getElementById('authError').style.display = 'none';
+                if(el) { el.textContent = msg; el.style.display = 'block'; }
+                const errorEl = document.getElementById('authError');
+                if(errorEl) errorEl.style.display = 'none';
             }
 
             async function handleLogin(e) {
@@ -1259,9 +1351,12 @@
             }
 
             async function onAuthSuccess() {
-                document.getElementById('authOverlay').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                document.getElementById('userDisplayName').textContent = currentUser.user_metadata?.full_name || currentUser.email || 'Usuario';
+                const authOverlay = document.getElementById('authOverlay');
+                const appContainer = document.getElementById('appContainer');
+                if(authOverlay) authOverlay.style.display = 'none';
+                if(appContainer) appContainer.style.display = 'flex';
+                const userDisplay = document.getElementById('userDisplayName');
+                if(userDisplay) userDisplay.textContent = currentUser.user_metadata?.full_name || currentUser.email || 'Usuario';
                 await loadAllData();
                 initApp();
             }
@@ -1269,11 +1364,12 @@
             async function logout() {
                 if(supabase) await supabase.auth.signOut();
                 currentUser = null;
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.getElementById('appContainer').style.display = 'none';
+                const authOverlay = document.getElementById('authOverlay');
+                const appContainer = document.getElementById('appContainer');
+                if(authOverlay) authOverlay.style.display = 'flex';
+                if(appContainer) appContainer.style.display = 'none';
             }
 
-            // ---------- NAVIGATION ----------
             const titles = { dashboard:'📊 Dashboard', members:'👥 Miembros', payments:'💳 Pagos', memberships:'🏷️ Membresías', metrics:'📏 Métricas', reports:'📋 Reportes' };
             function setupNavigation() {
                 document.querySelectorAll('.sidebar-nav button[data-section]').forEach(btn => {
@@ -1282,8 +1378,10 @@
                         btn.classList.add('active');
                         const sec = btn.dataset.section;
                         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                        document.getElementById('section-'+sec).classList.add('active');
-                        document.getElementById('sectionTitle').textContent = titles[sec]||sec;
+                        const sectionEl = document.getElementById('section-'+sec);
+                        if(sectionEl) sectionEl.classList.add('active');
+                        const titleEl = document.getElementById('sectionTitle');
+                        if(titleEl) titleEl.textContent = titles[sec]||sec;
                         if(sec === 'dashboard') renderDashboard();
                         if(sec === 'members') renderMembers();
                         if(sec === 'payments') renderPayments();
@@ -1294,7 +1392,6 @@
                 });
             }
 
-            // ---------- RENDER DASHBOARD ----------
             function renderDashboard() {
                 const members = appData.members, payments = appData.payments;
                 const today = new Date(); today.setHours(0,0,0,0);
@@ -1302,29 +1399,67 @@
                 const expiring = members.filter(m=>m.status==='expiring').length;
                 const expired = members.filter(m=>m.status==='expired').length;
                 const monthIncome = payments.filter(p=>{ const d=new Date(p.date); return d.getMonth()===today.getMonth() && d.getFullYear()===today.getFullYear(); }).reduce((s,p)=>s+p.amount,0);
-                document.getElementById('dashboardStats').innerHTML = `
-                    <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-info"><h3>Total Miembros</h3><div class="stat-value">${members.length}</div></div></div>
-                    <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h3>Activos</h3><div class="stat-value">${active}</div></div></div>
-                    <div class="stat-card"><div class="stat-icon orange">⚠️</div><div class="stat-info"><h3>Por Vencer</h3><div class="stat-value">${expiring}</div></div></div>
-                    <div class="stat-card"><div class="stat-icon red">❌</div><div class="stat-info"><h3>Vencidos</h3><div class="stat-value">${expired}</div></div></div>
-                    <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><h3>Ingresos del Mes</h3><div class="stat-value">${formatCurrency(monthIncome)}</div></div></div>`;
-                const alertList = members.filter(m=>m.status==='expiring'||m.status==='expired').sort((a,b)=>new Date(a.endDate)-new Date(b.endDate));
-                document.getElementById('alertBadge').style.display = alertList.length?'inline-block':'none';
-                document.getElementById('alertBadge').textContent = alertList.length;
-                document.getElementById('expiringCountLabel').textContent = alertList.length?`${alertList.length} requieren atención`:'';
-                const tbody = document.getElementById('expiringAlertsTable');
-                if(alertList.length===0){ tbody.innerHTML=''; document.getElementById('noAlertsMsg').style.display='block'; }
-                else {
-                    document.getElementById('noAlertsMsg').style.display='none';
-                    tbody.innerHTML = alertList.map(m=>{
-                        const end = new Date(m.endDate); const diff = Math.ceil((end-today)/(1000*60*60*24));
-                        const rowCls = diff<0?'row-danger':'row-warning';
-                        return `<tr class="${rowCls}"><td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td>${diff<0?'Vencido hace '+Math.abs(diff)+' días':diff+' días'}</td><td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td><td><button class="btn btn-sm btn-warning" onclick="quickRenew('${m.id}')">🔄</button></td></tr>`;
-                    }).join('');
+                
+                const dashboardStats = document.getElementById('dashboardStats');
+                if(dashboardStats) {
+                    dashboardStats.innerHTML = `
+                        <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-info"><h3>Total Miembros</h3><div class="stat-value">${members.length}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h3>Activos</h3><div class="stat-value">${active}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon orange">⚠️</div><div class="stat-info"><h3>Por Vencer</h3><div class="stat-value">${expiring}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon red">❌</div><div class="stat-info"><h3>Vencidos</h3><div class="stat-value">${expired}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><h3>Ingresos del Mes</h3><div class="stat-value">${formatCurrency(monthIncome)}</div></div></div>`;
                 }
+                
+                const alertList = members.filter(m=>m.status==='expiring'||m.status==='expired').sort((a,b)=>new Date(a.endDate)-new Date(b.endDate));
+                const alertBadge = document.getElementById('alertBadge');
+                if(alertBadge) {
+                    alertBadge.style.display = alertList.length ? 'inline-block' : 'none';
+                    alertBadge.textContent = alertList.length;
+                }
+                
+                const expiringCountLabel = document.getElementById('expiringCountLabel');
+                if(expiringCountLabel) expiringCountLabel.textContent = alertList.length ? `${alertList.length} requieren atención` : '';
+                
+                const tbody = document.getElementById('expiringAlertsTable');
+                const noAlertsMsg = document.getElementById('noAlertsMsg');
+                
+                if(alertList.length === 0) { 
+                    if(tbody) tbody.innerHTML = ''; 
+                    if(noAlertsMsg) noAlertsMsg.style.display = 'block'; 
+                } else {
+                    if(noAlertsMsg) noAlertsMsg.style.display = 'none';
+                    if(tbody) {
+                        tbody.innerHTML = alertList.map(m=>{
+                            const end = new Date(m.endDate); 
+                            const diff = Math.ceil((end-today)/(1000*60*60*24));
+                            const rowCls = diff<0?'row-danger':'row-warning';
+                            return `<tr class="${rowCls}">
+                                <td>${m.name}</td>
+                                <td>${m.membershipType}</td>
+                                <td>${formatDate(m.endDate)}</td>
+                                <td>${diff<0?'Vencido hace '+Math.abs(diff)+' días':diff+' días'}</td>
+                                <td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td>
+                                <td><button class="btn btn-sm btn-warning" onclick="quickRenew('${m.id}')">🔄</button></td>
+                             </tr>`;
+                        }).join('');
+                    }
+                }
+                
                 const recent = [...payments].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-                document.getElementById('recentPaymentsTable').innerHTML = recent.length? recent.map(p=>`<tr><td>${getMemberById(p.memberId)?.name||'?'}</td><td>${formatCurrency(p.amount)}</td><td>${formatDate(p.date)}</td><td>${p.paymentMethod}</td></tr>`).join('') : '';
-                document.getElementById('noPaymentsMsg').style.display = recent.length ? 'none' : 'block';
+                const recentPaymentsTable = document.getElementById('recentPaymentsTable');
+                const noPaymentsMsg = document.getElementById('noPaymentsMsg');
+                
+                if(recentPaymentsTable) {
+                    recentPaymentsTable.innerHTML = recent.length ? recent.map(p=>`
+                        <tr>
+                            <td>${getMemberById(p.memberId)?.name||'?'}</td>
+                            <td>${formatCurrency(p.amount)}</td>
+                            <td>${formatDate(p.date)}</td>
+                            <td>${p.paymentMethod}</td>
+                        </tr>
+                    `).join('') : '';
+                }
+                if(noPaymentsMsg) noPaymentsMsg.style.display = recent.length ? 'none' : 'block';
             }
 
             function getMemberById(id) { return appData.members.find(m=>m.id===id); }
@@ -1338,12 +1473,30 @@
                 else if(filter==='expiring') list = list.filter(m=>m.status==='expiring');
                 else if(filter==='expired') list = list.filter(m=>m.status==='expired');
                 const tbody = document.getElementById('membersTable');
-                if(list.length===0) tbody.innerHTML = '';
-                else tbody.innerHTML = list.map(m=>{
-                    const cls = m.status==='expired'?'row-danger':m.status==='expiring'?'row-warning':'';
-                    return `<tr class="${cls}"><td>${m.name}</td><td>${m.email||'-'}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td><td><button class="btn btn-sm btn-info" onclick="editMember('${m.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteMember('${m.id}')">🗑️</button></td></tr>`;
-                }).join('');
-                document.getElementById('noMembersMsg').style.display = list.length ? 'none' : 'block';
+                const noMembersMsg = document.getElementById('noMembersMsg');
+                
+                if(list.length === 0) { 
+                    if(tbody) tbody.innerHTML = ''; 
+                    if(noMembersMsg) noMembersMsg.style.display = 'block'; 
+                } else {
+                    if(noMembersMsg) noMembersMsg.style.display = 'none';
+                    if(tbody) {
+                        tbody.innerHTML = list.map(m=>{
+                            const cls = m.status==='expired'?'row-danger':m.status==='expiring'?'row-warning':'';
+                            return `<tr class="${cls}">
+                                <td>${m.name}</td>
+                                <td>${m.email||'-'}</td>
+                                <td>${m.membershipType}</td>
+                                <td>${formatDate(m.endDate)}</td>
+                                <td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="editMember('${m.id}')">✏️</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteMember('${m.id}')">🗑️</button>
+                                </td>
+                             </tr>`;
+                        }).join('');
+                    }
+                }
             }
 
             function openMemberModal(id=null) {
@@ -1377,17 +1530,18 @@
             function updateMemberPrice(){
                 const type = document.getElementById('memberMembershipType').value;
                 const dur = parseInt(document.getElementById('memberDuration').value);
-                document.getElementById('memberPrice').value = (type&&dur) ? getMembershipPrice(type,dur) : '';
+                const priceInput = document.getElementById('memberPrice');
+                if(priceInput) priceInput.value = (type&&dur) ? getMembershipPrice(type,dur) : '';
             }
 
             function populateMemberSelect(){
                 const sel = document.getElementById('paymentMember');
-                sel.innerHTML = '<option value="">Seleccionar miembro...</option>'+appData.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+                if(sel) sel.innerHTML = '<option value="">Seleccionar miembro...</option>'+appData.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
             }
             
             function populateMetricsMemberSelect(){
                 const sel = document.getElementById('metricsMemberSelect');
-                sel.innerHTML = '<option value="">-- Seleccionar miembro --</option>'+appData.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+                if(sel) sel.innerHTML = '<option value="">-- Seleccionar miembro --</option>'+appData.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
             }
             
             function populateMembershipTypeSelect(){
@@ -1401,26 +1555,59 @@
             function renderPayments() {
                 const tbody = document.getElementById('paymentsTable');
                 const list = [...appData.payments].sort((a,b)=>new Date(b.date)-new Date(a.date));
-                tbody.innerHTML = list.length? list.map(p=>`<tr><td>${getMemberById(p.memberId)?.name||'?'}</td><td>${formatCurrency(p.amount)}</td><td>${formatDate(p.date)}</td><td>${p.paymentMethod}</td><td><button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">🗑️</button></td></tr>`).join('') : '';
-                document.getElementById('noPaymentsTableMsg').style.display = list.length ? 'none' : 'block';
+                
+                if(tbody) {
+                    tbody.innerHTML = list.length ? list.map(p=>`
+                        <tr>
+                            <td>${getMemberById(p.memberId)?.name||'?'}</td>
+                            <td>${formatCurrency(p.amount)}</td>
+                            <td>${formatDate(p.date)}</td>
+                            <td>${p.paymentMethod}</td>
+                            <td><button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">🗑️</button></td>
+                        </tr>
+                    `).join('') : '';
+                }
+                
+                const noPaymentsTableMsg = document.getElementById('noPaymentsTableMsg');
+                if(noPaymentsTableMsg) noPaymentsTableMsg.style.display = list.length ? 'none' : 'block';
             }
 
             function openPaymentModal(){
                 document.getElementById('paymentId').value='';
                 document.getElementById('paymentAmount').value='';
                 document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('paymentMethod').value='Efectivo';
-                document.getElementById('paymentNotes').value='';
-                document.getElementById('paymentRenew').checked=true;
-                populateMemberSelect(); populateMembershipTypeSelect();
+                const methodSelect = document.getElementById('paymentMethod');
+                if(methodSelect) methodSelect.value='Efectivo';
+                const notesTextarea = document.getElementById('paymentNotes');
+                if(notesTextarea) notesTextarea.value='';
+                const renewCheckbox = document.getElementById('paymentRenew');
+                if(renewCheckbox) renewCheckbox.checked=true;
+                populateMemberSelect(); 
+                populateMembershipTypeSelect();
                 document.getElementById('paymentModalOverlay').style.display='flex';
             }
             function closePaymentModal(){ document.getElementById('paymentModalOverlay').style.display='none'; }
 
             function renderMemberships() {
                 const tbody = document.getElementById('membershipsTable');
-                tbody.innerHTML = appData.memberships.map(mt=>`<tr><td><strong>${mt.name}</strong></td><td>${formatCurrency(mt.prices[1])}</td><td>${formatCurrency(mt.prices[3])}</td><td>${formatCurrency(mt.prices[6])}</td><td>${formatCurrency(mt.prices[12])}</td><td><button class="btn btn-sm btn-info" onclick="editMembership('${mt.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteMembership('${mt.id}')">🗑️</button></td></tr>`).join('');
-                document.getElementById('noMembershipsMsg').style.display = appData.memberships.length ? 'none' : 'block';
+                const noMembershipsMsg = document.getElementById('noMembershipsMsg');
+                
+                if(tbody) {
+                    tbody.innerHTML = appData.memberships.map(mt=>`
+                        <tr>
+                            <td><strong>${mt.name}</strong></td>
+                            <td>${formatCurrency(mt.prices[1])}</td>
+                            <td>${formatCurrency(mt.prices[3])}</td>
+                            <td>${formatCurrency(mt.prices[6])}</td>
+                            <td>${formatCurrency(mt.prices[12])}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="editMembership('${mt.id}')">✏️</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteMembership('${mt.id}')">🗑️</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+                if(noMembershipsMsg) noMembershipsMsg.style.display = appData.memberships.length ? 'none' : 'block';
             }
 
             function openMembershipModal(id=null){
@@ -1447,28 +1634,32 @@
             }
             function closeMembershipModal(){ document.getElementById('membershipModalOverlay').style.display='none'; }
 
-            // ---------- MÉTRICAS ----------
             function renderMetricsSection() {
                 populateMetricsMemberSelect();
                 const selectedMember = document.getElementById('metricsMemberSelect').value;
                 if(selectedMember) {
                     loadMemberMetrics();
                 } else {
-                    document.getElementById('metricsDisplay').innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
+                    const metricsDisplay = document.getElementById('metricsDisplay');
+                    if(metricsDisplay) metricsDisplay.innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
                 }
             }
 
             function loadMemberMetrics() {
                 const memberId = document.getElementById('metricsMemberSelect').value;
                 if(!memberId) {
-                    document.getElementById('metricsDisplay').innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
+                    const metricsDisplay = document.getElementById('metricsDisplay');
+                    if(metricsDisplay) metricsDisplay.innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
                     return;
                 }
                 const member = getMemberById(memberId);
                 const memberMetrics = appData.metrics.filter(m => m.memberId === memberId).sort((a,b) => new Date(b.date) - new Date(a.date));
                 
+                const metricsDisplay = document.getElementById('metricsDisplay');
+                if(!metricsDisplay) return;
+                
                 if(memberMetrics.length === 0) {
-                    document.getElementById('metricsDisplay').innerHTML = `
+                    metricsDisplay.innerHTML = `
                         <div class="empty-state">
                             📏 No hay métricas registradas para ${member?.name}<br>
                             <button class="btn btn-primary btn-sm" onclick="openMetricModal()" style="margin-top:12px;">+ Registrar Primera Medición</button>
@@ -1492,401 +1683,125 @@
                     return `<span class="metric-value">${value} ${unit}</span> <span class="progress-trend ${trend.class}">${trend.icon}</span>`;
                 };
                 
-                const metricsHtml = `
+                metricsDisplay.innerHTML = `
                     <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>⚖️ Peso</h4></div>
-                            ${formatMetric(latest.weight, 'kg', latest.weight, previous?.weight)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>📏 Altura</h4></div>
-                            ${formatMetric(latest.height, 'cm', latest.height, previous?.height)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>💪 Pecho</h4></div>
-                            ${formatMetric(latest.chest, 'cm', latest.chest, previous?.chest)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>💪 Brazo</h4></div>
-                            ${formatMetric(latest.arm, 'cm', latest.arm, previous?.arm)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>🦵 Cadera</h4></div>
-                            ${formatMetric(latest.hip, 'cm', latest.hip, previous?.hip)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>🎯 Abdomen</h4></div>
-                            ${formatMetric(latest.waist, 'cm', latest.waist, previous?.waist)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>🦵 Muslo</h4></div>
-                            ${formatMetric(latest.thigh, 'cm', latest.thigh, previous?.thigh)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>🦵 Pantorrilla</h4></div>
-                            ${formatMetric(latest.calf, 'cm', latest.calf, previous?.calf)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-header"><h4>📐 Ancho Espalda</h4></div>
-                            ${formatMetric(latest.backWidth, 'cm', latest.backWidth, previous?.backWidth)}
-                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
-                        </div>
+                        <div class="metric-card"><div class="metric-header"><h4>⚖️ Peso</h4></div>${formatMetric(latest.weight, 'kg', latest.weight, previous?.weight)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>📏 Altura</h4></div>${formatMetric(latest.height, 'cm', latest.height, previous?.height)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>💪 Pecho</h4></div>${formatMetric(latest.chest, 'cm', latest.chest, previous?.chest)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>💪 Brazo</h4></div>${formatMetric(latest.arm, 'cm', latest.arm, previous?.arm)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>🦵 Cadera</h4></div>${formatMetric(latest.hip, 'cm', latest.hip, previous?.hip)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>🎯 Abdomen</h4></div>${formatMetric(latest.waist, 'cm', latest.waist, previous?.waist)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>🦵 Muslo</h4></div>${formatMetric(latest.thigh, 'cm', latest.thigh, previous?.thigh)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>🦵 Pantorrilla</h4></div>${formatMetric(latest.calf, 'cm', latest.calf, previous?.calf)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
+                        <div class="metric-card"><div class="metric-header"><h4>📐 Ancho Espalda</h4></div>${formatMetric(latest.backWidth, 'cm', latest.backWidth, previous?.backWidth)}<div class="metric-date">Última: ${formatDate(latest.date)}</div></div>
                     </div>
                     <div class="evolution-chart">
-                        <div class="card-header">
-                            <h2>📈 Evolución de Métricas</h2>
-                        </div>
+                        <div class="card-header"><h2>📈 Evolución de Métricas</h2></div>
                         <div class="card-body">
                             <canvas id="weightEvolutionChart" style="max-height: 300px; margin-bottom: 30px;"></canvas>
                             <canvas id="bodyMeasurementsChart" style="max-height: 300px;"></canvas>
                         </div>
                     </div>
                     <div class="card" style="margin-top:20px;">
-                        <div class="card-header">
-                            <h2>📋 Historial de Mediciones</h2>
-                            <button class="btn btn-primary btn-sm" onclick="openMetricModal()">+ Nueva Medición</button>
-                        </div>
+                        <div class="card-header"><h2>📋 Historial de Mediciones</h2><button class="btn btn-primary btn-sm" onclick="openMetricModal()">+ Nueva Medición</button></div>
                         <div class="card-body">
-                            <table>
-                                <thead>
-                                    <tr><th>Fecha</th><th>Peso (kg)</th><th>Altura (cm)</th><th>Pecho (cm)</th><th>Brazo (cm)</th><th>Cadera (cm)</th><th>Abdomen (cm)</th><th>Muslo (cm)</th><th>Pantorrilla (cm)</th><th>Espalda (cm)</th><th>Acciones</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${memberMetrics.map(m => `
-                                        <tr>
-                                            <td>${formatDate(m.date)}</td>
-                                            <td>${m.weight || '-'}</td>
-                                            <td>${m.height || '-'}</td>
-                                            <td>${m.chest || '-'}</td>
-                                            <td>${m.arm || '-'}</td>
-                                            <td>${m.hip || '-'}</td>
-                                            <td>${m.waist || '-'}</td>
-                                            <td>${m.thigh || '-'}</td>
-                                            <td>${m.calf || '-'}</td>
-                                            <td>${m.backWidth || '-'}</td>
-                                            <td><button class="btn btn-sm btn-info" onclick="editMetric('${m.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteMetric('${m.id}')">🗑️</button></td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
+                            <table><thead><tr><th>Fecha</th><th>Peso</th><th>Altura</th><th>Pecho</th><th>Brazo</th><th>Cadera</th><th>Abdomen</th><th>Muslo</th><th>Pantorrilla</th><th>Espalda</th><th>Acciones</th></tr></thead>
+                            <tbody>${memberMetrics.map(m => `<tr><td>${formatDate(m.date)}</td><td>${m.weight || '-'}</td><td>${m.height || '-'}</td><td>${m.chest || '-'}</td><td>${m.arm || '-'}</td><td>${m.hip || '-'}</td><td>${m.waist || '-'}</td><td>${m.thigh || '-'}</td><td>${m.calf || '-'}</td><td>${m.backWidth || '-'}</td><td><button class="btn btn-sm btn-info" onclick="editMetric('${m.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteMetric('${m.id}')">🗑️</button></td></tr>`).join('')}</tbody>
                             </table>
                         </div>
                     </div>
                 `;
-                document.getElementById('metricsDisplay').innerHTML = metricsHtml;
                 
-                // Crear gráficos de evolución
                 setTimeout(() => {
-                    createEvolutionCharts(memberMetrics);
+                    const sortedMetrics = [...memberMetrics].sort((a,b) => new Date(a.date) - new Date(b.date));
+                    const dates = sortedMetrics.map(m => formatDate(m.date));
+                    const weights = sortedMetrics.map(m => m.weight || null);
+                    const chests = sortedMetrics.map(m => m.chest || null);
+                    const arms = sortedMetrics.map(m => m.arm || null);
+                    const waists = sortedMetrics.map(m => m.waist || null);
+                    
+                    const weightCtx = document.getElementById('weightEvolutionChart')?.getContext('2d');
+                    if (weightCtx) {
+                        if(evolutionCharts.weight) evolutionCharts.weight.destroy();
+                        evolutionCharts.weight = new Chart(weightCtx, {
+                            type: 'line', data: { labels: dates, datasets: [{ label: 'Peso (kg)', data: weights, borderColor: '#f04e30', backgroundColor: 'rgba(240,78,48,0.1)', borderWidth: 3, tension: 0.3, fill: true }] },
+                            options: { responsive: true, plugins: { legend: { labels: { color: '#a0aec0' } } }, scales: { y: { ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } }, x: { ticks: { color: '#a0aec0', rotation: 45 }, grid: { color: '#2a2a40' } } } }
+                        });
+                    }
+                    
+                    const measuresCtx = document.getElementById('bodyMeasurementsChart')?.getContext('2d');
+                    if (measuresCtx) {
+                        if(evolutionCharts.measures) evolutionCharts.measures.destroy();
+                        evolutionCharts.measures = new Chart(measuresCtx, {
+                            type: 'line', data: { labels: dates, datasets: [{ label: 'Pecho (cm)', data: chests, borderColor: '#10b981', borderWidth: 2 }, { label: 'Brazo (cm)', data: arms, borderColor: '#3b82f6', borderWidth: 2 }, { label: 'Abdomen (cm)', data: waists, borderColor: '#f59e0b', borderWidth: 2 }] },
+                            options: { responsive: true, plugins: { legend: { labels: { color: '#a0aec0' } } }, scales: { y: { ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } }, x: { ticks: { color: '#a0aec0', rotation: 45 }, grid: { color: '#2a2a40' } } } }
+                        });
+                    }
                 }, 100);
             }
 
-            function createEvolutionCharts(metrics) {
-                const sortedMetrics = [...metrics].sort((a,b) => new Date(a.date) - new Date(b.date));
-                const dates = sortedMetrics.map(m => formatDate(m.date));
-                const weights = sortedMetrics.map(m => m.weight || null);
-                const chests = sortedMetrics.map(m => m.chest || null);
-                const arms = sortedMetrics.map(m => m.arm || null);
-                const waists = sortedMetrics.map(m => m.waist || null);
-                
-                // Gráfico de peso
-                const weightCtx = document.getElementById('weightEvolutionChart')?.getContext('2d');
-                if (weightCtx && evolutionCharts.weight) evolutionCharts.weight.destroy();
-                if (weightCtx) {
-                    evolutionCharts.weight = new Chart(weightCtx, {
-                        type: 'line',
-                        data: {
-                            labels: dates,
-                            datasets: [{
-                                label: 'Peso (kg)',
-                                data: weights,
-                                borderColor: '#f04e30',
-                                backgroundColor: 'rgba(240,78,48,0.1)',
-                                borderWidth: 3,
-                                pointBackgroundColor: '#fff',
-                                pointRadius: 5,
-                                pointHoverRadius: 8,
-                                tension: 0.3,
-                                fill: true
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: { labels: { color: '#a0aec0' } },
-                                title: { display: true, text: 'Evolución de Peso', color: '#e2e8f0', font: { size: 14 } }
-                            },
-                            scales: {
-                                y: { beginAtZero: false, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
-                                x: { ticks: { color: '#a0aec0', rotation: 45 }, grid: { color: '#2a2a40' } }
-                            }
-                        }
-                    });
-                }
-                
-                // Gráfico de medidas corporales
-                const measuresCtx = document.getElementById('bodyMeasurementsChart')?.getContext('2d');
-                if (measuresCtx && evolutionCharts.measures) evolutionCharts.measures.destroy();
-                if (measuresCtx) {
-                    evolutionCharts.measures = new Chart(measuresCtx, {
-                        type: 'line',
-                        data: {
-                            labels: dates,
-                            datasets: [
-                                { label: 'Pecho (cm)', data: chests, borderColor: '#10b981', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4 },
-                                { label: 'Brazo (cm)', data: arms, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4 },
-                                { label: 'Abdomen (cm)', data: waists, borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4 }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: { labels: { color: '#a0aec0' } },
-                                title: { display: true, text: 'Evolución de Medidas Corporales', color: '#e2e8f0', font: { size: 14 } }
-                            },
-                            scales: {
-                                y: { beginAtZero: false, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
-                                x: { ticks: { color: '#a0aec0', rotation: 45 }, grid: { color: '#2a2a40' } }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // Función para imprimir métricas
             function printMemberMetrics() {
                 const memberId = document.getElementById('metricsMemberSelect').value;
-                if(!memberId) {
-                    showToast('Primero selecciona un miembro', 'error');
-                    return;
-                }
-                
+                if(!memberId) { showToast('Primero selecciona un miembro', 'error'); return; }
                 const member = getMemberById(memberId);
                 const memberMetrics = appData.metrics.filter(m => m.memberId === memberId).sort((a,b) => new Date(a.date) - new Date(b.date));
+                if(memberMetrics.length === 0) { showToast('No hay métricas registradas para este miembro', 'error'); return; }
                 
-                if(memberMetrics.length === 0) {
-                    showToast('No hay métricas registradas para este miembro', 'error');
-                    return;
-                }
-                
-                // Crear contenido para impresión
                 const printContent = document.createElement('div');
-                printContent.className = 'print-content';
                 printContent.innerHTML = `
-                    <div class="print-header">
-                        <h1 style="color: #f04e30; margin-bottom: 10px;">Bee-GymPro - Reporte de Métricas</h1>
-                        <h2 style="color: #333;">${member.name}</h2>
-                        <p style="color: #666;">Fecha de emisión: ${new Date().toLocaleDateString('es-MX')}</p>
-                    </div>
-                    
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: #f04e30; border-bottom: 2px solid #f04e30; padding-bottom: 8px; margin-bottom: 20px;">📊 Resumen del Miembro</h3>
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Email</th><td style="padding: 10px; border: 1px solid #ddd;">${member.email || '-'}</td></tr>
-                            <tr><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Teléfono</th><td style="padding: 10px; border: 1px solid #ddd;">${member.phone || '-'}</td></tr>
-                            <tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Membresía</th><td style="padding: 10px; border: 1px solid #ddd;">${member.membershipType}</td></tr>
-                            <tr><th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Fecha de Ingreso</th><td style="padding: 10px; border: 1px solid #ddd;">${formatDate(member.joinDate)}</td></tr>
-                        </table>
-                    </div>
-                    
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: #f04e30; border-bottom: 2px solid #f04e30; padding-bottom: 8px; margin-bottom: 20px;">📏 Últimas Mediciones</h3>
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f04e30; color: white;">
-                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Medición</th>
-                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Valor Actual</th>
-                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Fecha</th>
-                                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Cambio vs Anterior</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${getComparisonTable(memberMetrics)}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: #f04e30; border-bottom: 2px solid #f04e30; padding-bottom: 8px; margin-bottom: 20px;">📋 Historial Completo de Mediciones</h3>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 11pt;">
-                            <thead>
-                                <tr style="background: #f0f0f0;">
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Fecha</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Peso(kg)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Altura(cm)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Pecho(cm)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Brazo(cm)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Cadera(cm)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Abdomen(cm)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Muslo(cm)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Pantorrilla(cm)</th>
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Espalda(cm)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${memberMetrics.map(m => `
-                                    <tr>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${formatDate(m.date)}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.weight || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.height || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.chest || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.arm || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.hip || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.waist || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.thigh || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.calf || '-'}</td>
-                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.backWidth || '-'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="print-footer">
-                        <p>Reporte generado por Bee-GymPro - Sistema de Gestión de Gimnasio</p>
-                        <p>© ${new Date().getFullYear()} Bee-GymPro - Todos los derechos reservados</p>
-                    </div>
+                    <div class="print-header"><h1 style="color:#f04e30;">GymPro - Reporte de Métricas</h1><h2>${member.name}</h2><p>Fecha: ${new Date().toLocaleDateString('es-MX')}</p></div>
+                    <div><h3>📊 Resumen del Miembro</h3><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;"><tr><th>Email</th><td>${member.email || '-'}</td></tr><tr><th>Teléfono</th><td>${member.phone || '-'}</td></tr><tr><th>Membresía</th><td>${member.membershipType}</td></tr><tr><th>Fecha Ingreso</th><td>${formatDate(member.joinDate)}</td></tr></table></div>
+                    <div><h3>📏 Últimas Mediciones</h3><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;"><thead><tr style="background:#f04e30;color:white;"><th>Medición</th><th>Valor Actual</th><th>Fecha</th><th>Cambio</th></tr></thead><tbody>
+                        ${(() => { const latest = memberMetrics[0], prev = memberMetrics[1]; const measurements = [{name:'Peso',val:latest.weight,prev:prev?.weight,unit:'kg'},{name:'Altura',val:latest.height,prev:prev?.height,unit:'cm'},{name:'Pecho',val:latest.chest,prev:prev?.chest,unit:'cm'},{name:'Brazo',val:latest.arm,prev:prev?.arm,unit:'cm'},{name:'Cadera',val:latest.hip,prev:prev?.hip,unit:'cm'},{name:'Abdomen',val:latest.waist,prev:prev?.waist,unit:'cm'},{name:'Muslo',val:latest.thigh,prev:prev?.thigh,unit:'cm'},{name:'Pantorrilla',val:latest.calf,prev:prev?.calf,unit:'cm'},{name:'Espalda',val:latest.backWidth,prev:prev?.backWidth,unit:'cm'}];
+                        return measurements.map(m => `<tr><td><strong>${m.name}</strong></td><td>${m.val || '-'} ${m.unit}</td><td>${formatDate(latest.date)}</td><td>${m.prev ? ((m.val - m.prev) > 0 ? '▲' : (m.val - m.prev) < 0 ? '▼' : '•') + ' ' + Math.abs(m.val - m.prev).toFixed(1) : '--'}</td></tr>`).join('');
+                        })()}
+                    </tbody></table></div>
+                    <div><h3>📋 Historial Completo</h3><table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;font-size:10pt;"><thead><tr><th>Fecha</th><th>Peso</th><th>Altura</th><th>Pecho</th><th>Brazo</th><th>Cadera</th><th>Abdomen</th><th>Muslo</th><th>Pantorrilla</th><th>Espalda</th></tr></thead><tbody>${memberMetrics.map(m => `<tr><td>${formatDate(m.date)}</td><td>${m.weight || '-'}</td><td>${m.height || '-'}</td><td>${m.chest || '-'}</td><td>${m.arm || '-'}</td><td>${m.hip || '-'}</td><td>${m.waist || '-'}</td><td>${m.thigh || '-'}</td><td>${m.calf || '-'}</td><td>${m.backWidth || '-'}</td></tr>`).join('')}</tbody></table></div>
+                    <div class="print-footer"><p>Reporte generado por GymPro - Sistema de Gestión de Gimnasio</p><p>© ${new Date().getFullYear()} GymPro</p></div>
                 `;
-                
-                // Agregar estilos para impresión
                 const printStyles = document.createElement('style');
-                printStyles.textContent = `
-                    @media print {
-                        body * {
-                            visibility: hidden;
-                        }
-                        .print-content, .print-content * {
-                            visibility: visible;
-                        }
-                        .print-content {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            padding: 20px;
-                        }
-                        table {
-                            page-break-inside: avoid;
-                        }
-                        h3 {
-                            page-break-after: avoid;
-                        }
-                    }
-                `;
-                
+                printStyles.textContent = '@media print { body * { visibility: hidden; } .print-content, .print-content * { visibility: visible; } .print-content { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; } }';
+                const printContainer = document.createElement('div');
+                printContainer.className = 'print-content';
+                printContainer.appendChild(printContent.cloneNode(true));
                 document.body.appendChild(printStyles);
-                document.body.appendChild(printContent);
-                
-                // Imprimir
+                document.body.appendChild(printContainer);
                 window.print();
-                
-                // Limpiar
-                setTimeout(() => {
-                    document.body.removeChild(printStyles);
-                    document.body.removeChild(printContent);
-                }, 100);
-            }
-            
-            function getComparisonTable(metrics) {
-                if(metrics.length === 0) return '<tr><td colspan="4">No hay datos</td></tr>';
-                
-                const latest = metrics[0];
-                const previous = metrics[1];
-                
-                const getChange = (current, prev) => {
-                    if(!prev || prev === 0 || !current) return '--';
-                    const diff = current - prev;
-                    const symbol = diff > 0 ? '▲' : diff < 0 ? '▼' : '•';
-                    const color = diff > 0 ? 'green' : diff < 0 ? 'red' : 'gray';
-                    return `${symbol} ${Math.abs(diff).toFixed(1)} (${((diff/prev)*100).toFixed(1)}%)`;
-                };
-                
-                const measurements = [
-                    { name: 'Peso', current: latest.weight, previous: previous?.weight, unit: 'kg' },
-                    { name: 'Altura', current: latest.height, previous: previous?.height, unit: 'cm' },
-                    { name: 'Pecho', current: latest.chest, previous: previous?.chest, unit: 'cm' },
-                    { name: 'Brazo', current: latest.arm, previous: previous?.arm, unit: 'cm' },
-                    { name: 'Cadera', current: latest.hip, previous: previous?.hip, unit: 'cm' },
-                    { name: 'Abdomen', current: latest.waist, previous: previous?.waist, unit: 'cm' },
-                    { name: 'Muslo', current: latest.thigh, previous: previous?.thigh, unit: 'cm' },
-                    { name: 'Pantorrilla', current: latest.calf, previous: previous?.calf, unit: 'cm' },
-                    { name: 'Espalda', current: latest.backWidth, previous: previous?.backWidth, unit: 'cm' }
-                ];
-                
-                return measurements.map(m => `
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>${m.name}</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${m.current || '-'} ${m.unit}</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${formatDate(latest.date)}</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${getChange(m.current, m.previous)}</td>
-                    </tr>
-                `).join('');
+                setTimeout(() => { document.body.removeChild(printStyles); document.body.removeChild(printContainer); }, 100);
             }
 
             function openMetricModal(metricId = null) {
                 const memberId = document.getElementById('metricsMemberSelect').value;
-                if(!memberId && !metricId) {
-                    showToast('Primero selecciona un miembro', 'error');
-                    return;
-                }
-                document.getElementById('metricMemberId').value = metricId ? getMetricById(metricId)?.memberId || memberId : memberId;
+                if(!memberId && !metricId) { showToast('Primero selecciona un miembro', 'error'); return; }
+                document.getElementById('metricMemberId').value = metricId ? appData.metrics.find(m=>m.id===metricId)?.memberId || memberId : memberId;
                 document.getElementById('metricId').value = '';
                 document.getElementById('metricDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('metricWeight').value = '';
-                document.getElementById('metricHeight').value = '';
-                document.getElementById('metricChest').value = '';
-                document.getElementById('metricArm').value = '';
-                document.getElementById('metricHip').value = '';
-                document.getElementById('metricWaist').value = '';
-                document.getElementById('metricThigh').value = '';
-                document.getElementById('metricCalf').value = '';
-                document.getElementById('metricBackWidth').value = '';
+                ['metricWeight','metricHeight','metricChest','metricArm','metricHip','metricWaist','metricThigh','metricCalf','metricBackWidth'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
                 document.getElementById('metricModalTitle').textContent = '📏 Registrar Métricas';
-                
                 if(metricId) {
-                    const metric = getMetricById(metricId);
+                    const metric = appData.metrics.find(m => m.id === metricId);
                     if(metric) {
                         document.getElementById('metricId').value = metric.id;
                         document.getElementById('metricDate').value = metric.date;
-                        document.getElementById('metricWeight').value = metric.weight || '';
-                        document.getElementById('metricHeight').value = metric.height || '';
-                        document.getElementById('metricChest').value = metric.chest || '';
-                        document.getElementById('metricArm').value = metric.arm || '';
-                        document.getElementById('metricHip').value = metric.hip || '';
-                        document.getElementById('metricWaist').value = metric.waist || '';
-                        document.getElementById('metricThigh').value = metric.thigh || '';
-                        document.getElementById('metricCalf').value = metric.calf || '';
-                        document.getElementById('metricBackWidth').value = metric.backWidth || '';
+                        if(document.getElementById('metricWeight')) document.getElementById('metricWeight').value = metric.weight || '';
+                        if(document.getElementById('metricHeight')) document.getElementById('metricHeight').value = metric.height || '';
+                        if(document.getElementById('metricChest')) document.getElementById('metricChest').value = metric.chest || '';
+                        if(document.getElementById('metricArm')) document.getElementById('metricArm').value = metric.arm || '';
+                        if(document.getElementById('metricHip')) document.getElementById('metricHip').value = metric.hip || '';
+                        if(document.getElementById('metricWaist')) document.getElementById('metricWaist').value = metric.waist || '';
+                        if(document.getElementById('metricThigh')) document.getElementById('metricThigh').value = metric.thigh || '';
+                        if(document.getElementById('metricCalf')) document.getElementById('metricCalf').value = metric.calf || '';
+                        if(document.getElementById('metricBackWidth')) document.getElementById('metricBackWidth').value = metric.backWidth || '';
                         document.getElementById('metricModalTitle').textContent = '✏️ Editar Métricas';
                     }
                 }
                 document.getElementById('metricModalOverlay').style.display = 'flex';
             }
 
-            function getMetricById(id) {
-                return appData.metrics.find(m => m.id === id);
-            }
+            function closeMetricModal() { document.getElementById('metricModalOverlay').style.display = 'none'; }
 
-            function closeMetricModal() {
-                document.getElementById('metricModalOverlay').style.display = 'none';
-            }
-
-            // ---------- CHARTS ----------
             let chartInstances = {};
-
-            function destroyCharts() {
-                Object.values(chartInstances).forEach(c => c.destroy());
-                chartInstances = {};
-            }
+            function destroyCharts() { Object.values(chartInstances).forEach(c => c.destroy()); chartInstances = {}; }
 
             function drawIncomeChart(monthlyData) {
                 const months = Object.keys(monthlyData).sort();
@@ -1895,33 +1810,8 @@
                 if (!ctx) return;
                 if (chartInstances.income) chartInstances.income.destroy();
                 chartInstances.income = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: months.map(m => {
-                            const [y, mo] = m.split('-');
-                            return new Date(y, mo - 1).toLocaleDateString('es', { month: 'short', year: 'numeric' });
-                        }),
-                        datasets: [{
-                            label: 'Ingresos ($)',
-                            data: totals,
-                            borderColor: '#f04e30',
-                            backgroundColor: 'rgba(240,78,48,0.1)',
-                            borderWidth: 3,
-                            pointBackgroundColor: '#fff',
-                            pointRadius: 5,
-                            pointHoverRadius: 8,
-                            tension: 0.3,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { labels: { color: '#a0aec0' } } },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
-                            x: { ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } }
-                        }
-                    }
+                    type: 'line', data: { labels: months.map(m => { const [y, mo] = m.split('-'); return new Date(y, mo-1).toLocaleDateString('es',{month:'short',year:'numeric'}); }), datasets: [{ label: 'Ingresos ($)', data: totals, borderColor: '#f04e30', backgroundColor: 'rgba(240,78,48,0.1)', borderWidth: 3, tension: 0.3, fill: true }] },
+                    options: { responsive: true, plugins: { legend: { labels: { color: '#a0aec0' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } }, x: { ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } } } }
                 });
             }
 
@@ -1932,317 +1822,212 @@
                 const ctx = document.getElementById('membershipChartCanvas')?.getContext('2d');
                 if (!ctx) return;
                 if (chartInstances.membership) chartInstances.membership.destroy();
-                chartInstances.membership = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Activos', 'Por Vencer', 'Vencidos'],
-                        datasets: [{
-                            data: [active, expiring, expired],
-                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                            borderColor: '#1c1c30',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { position: 'bottom', labels: { color: '#a0aec0', padding: 20 } } }
-                    }
-                });
+                chartInstances.membership = new Chart(ctx, { type: 'doughnut', data: { labels: ['Activos', 'Por Vencer', 'Vencidos'], datasets: [{ data: [active, expiring, expired], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderColor: '#1c1c30', borderWidth: 2 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#a0aec0', padding: 20 } } } } });
             }
 
             function drawExpirationChart() {
                 const today = new Date(); today.setHours(0,0,0,0);
                 const future = new Date(today); future.setDate(future.getDate() + 30);
                 const weeks = {};
-                appData.members.forEach(m => {
-                    const end = new Date(m.endDate);
-                    if (end <= future) {
-                        const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-                        const week = Math.ceil(diffDays / 7);
-                        const label = week <= 0 ? 'Vencido' : `Semana ${week}`;
-                        if (!weeks[label]) weeks[label] = 0;
-                        weeks[label]++;
-                    }
-                });
-                const labels = Object.keys(weeks).sort((a, b) => {
-                    if (a === 'Vencido') return -1;
-                    if (b === 'Vencido') return 1;
-                    return parseInt(a) - parseInt(b);
-                });
-                const data = labels.map(l => weeks[l]);
+                appData.members.forEach(m => { const end = new Date(m.endDate); if (end <= future) { const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24)); const week = Math.ceil(diffDays / 7); const label = week <= 0 ? 'Vencido' : `Semana ${week}`; if (!weeks[label]) weeks[label] = 0; weeks[label]++; } });
+                const labels = Object.keys(weeks).sort((a,b) => { if(a === 'Vencido') return -1; if(b === 'Vencido') return 1; return parseInt(a) - parseInt(b); });
                 const ctx = document.getElementById('expirationChartCanvas')?.getContext('2d');
                 if (!ctx) return;
                 if (chartInstances.expiration) chartInstances.expiration.destroy();
-                chartInstances.expiration = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Membresías por vencer',
-                            data: data,
-                            backgroundColor: labels.map(l => l === 'Vencido' ? '#ef4444' : '#f59e0b'),
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { stepSize: 1, color: '#a0aec0' }, grid: { color: '#2a2a40' } },
-                            x: { ticks: { color: '#a0aec0' }, grid: { display: false } }
-                        }
-                    }
-                });
+                chartInstances.expiration = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Membresías por vencer', data: labels.map(l => weeks[l]), backgroundColor: labels.map(l => l === 'Vencido' ? '#ef4444' : '#f59e0b'), borderRadius: 6 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#a0aec0' }, grid: { color: '#2a2a40' } }, x: { ticks: { color: '#a0aec0' }, grid: { display: false } } } } });
             }
 
             function renderReport(type) {
                 if (!appData.members || !appData.payments) return;
                 destroyCharts();
                 const container = document.getElementById('reportContent');
-                let html = '';
-
+                if(!container) return;
+                
                 if (type === 'income') {
                     const monthly = {};
-                    appData.payments.forEach(p => {
-                        const d = new Date(p.date);
-                        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-                        if (!monthly[key]) monthly[key] = { total: 0, count: 0 };
-                        monthly[key].total += p.amount;
-                        monthly[key].count++;
-                    });
-
-                    html = `
-                        <div class="chart-container">
-                            <canvas id="incomeChartCanvas" style="max-height: 350px;"></canvas>
-                        </div>
-                        <div class="card">
-                            <div class="card-header"><h2>💰 Ingresos por Mes</h2></div>
-                            <div class="card-body">
-                                ${Object.keys(monthly).length === 0 ? '<div class="empty-state">📭 No hay ingresos registrados.</div>' : `
-                                <table>
-                                    <thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead>
-                                    <tbody>
-                                        ${Object.entries(monthly).sort((a,b) => b[0].localeCompare(a[0])).map(([k,v]) =>
-                                            `<tr><td>${k}</td><td>${v.count}</td><td>${formatCurrency(v.total)}</td></tr>`
-                                        ).join('')}
-                                    </tbody>
-                                </table>`}
-                            </div>
-                        </div>`;
-                    container.innerHTML = html;
+                    appData.payments.forEach(p => { const d = new Date(p.date); const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0'); if (!monthly[key]) monthly[key] = { total: 0, count: 0 }; monthly[key].total += p.amount; monthly[key].count++; });
+                    container.innerHTML = `<div class="chart-container"><canvas id="incomeChartCanvas"></canvas></div><div class="card"><div class="card-header"><h2>💰 Ingresos por Mes</h2></div><div class="card-body">${Object.keys(monthly).length === 0 ? '<div class="empty-state">📭 No hay ingresos registrados.</div>' : `<table><thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead><tbody>${Object.entries(monthly).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,v]) => `<tr><td>${k}</td><td>${v.count}</td><td>${formatCurrency(v.total)}</td></tr>`).join('')}</tbody></table>`}</div></div>`;
                     setTimeout(() => drawIncomeChart(monthly), 50);
-                }
-                else if (type === 'membership') {
-                    html = `
-                        <div class="chart-container">
-                            <canvas id="membershipChartCanvas" style="max-height: 350px;"></canvas>
-                        </div>
-                        <div class="card">
-                            <div class="card-header"><h2>📋 Estado de Membresías</h2></div>
-                            <div class="card-body">
-                                ${appData.members.length === 0 ? '<div class="empty-state">👤 No hay miembros registrados.</div>' : `
-                                <table>
-                                    <thead><tr><th>Miembro</th><th>Tipo</th><th>Vence</th><th>Estado</th></tr></thead>
-                                    <tbody>
-                                        ${appData.members.map(m =>
-                                            `<tr class="${m.status==='expired'?'row-danger':m.status==='expiring'?'row-warning':''}">
-                                                <td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td>
-                                                <td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td>
-                                            </tr>`
-                                        ).join('')}
-                                    </tbody>
-                                </table>`}
-                            </div>
-                        </div>`;
-                    container.innerHTML = html;
+                } else if (type === 'membership') {
+                    container.innerHTML = `<div class="chart-container"><canvas id="membershipChartCanvas"></canvas></div><div class="card"><div class="card-header"><h2>📋 Estado de Membresías</h2></div><div class="card-body">${appData.members.length === 0 ? '<div class="empty-state">👤 No hay miembros registrados.</div>' : `<table><thead><tr><th>Miembro</th><th>Tipo</th><th>Vence</th><th>Estado</th></tr></thead><tbody>${appData.members.map(m => `<tr><td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td></tr>`).join('')}</tbody></table>`}</div></div>`;
                     setTimeout(() => drawMembershipChart(), 50);
-                }
-                else if (type === 'expiration') {
-                    const future = new Date();
-                    future.setDate(future.getDate() + 30);
-                    const upcoming = appData.members.filter(m => new Date(m.endDate) <= future)
-                        .sort((a,b) => new Date(a.endDate) - new Date(b.endDate));
-
-                    html = `
-                        <div class="chart-container">
-                            <canvas id="expirationChartCanvas" style="max-height: 350px;"></canvas>
-                        </div>
-                        <div class="card">
-                            <div class="card-header"><h2>⚠️ Vencimientos Próximos (30 días)</h2></div>
-                            <div class="card-body">
-                                ${upcoming.length === 0 ? '<div class="empty-state">✅ No hay vencimientos próximos.</div>' : `
-                                <table>
-                                    <thead><tr><th>Miembro</th><th>Vence</th><th>Días</th></tr></thead>
-                                    <tbody>
-                                        ${upcoming.map(m => {
-                                            const diff = Math.ceil((new Date(m.endDate) - new Date()) / (1000*60*60*24));
-                                            return `<tr class="${diff<0?'row-danger':'row-warning'}">
-                                                <td>${m.name}</td><td>${formatDate(m.endDate)}</td>
-                                                <td>${diff<0?'Vencido hace '+Math.abs(diff):diff}</td>
-                                            </tr>`;
-                                        }).join('')}
-                                    </tbody>
-                                </table>`}
-                            </div>
-                        </div>`;
-                    container.innerHTML = html;
+                } else if (type === 'expiration') {
+                    const future = new Date(); future.setDate(future.getDate() + 30);
+                    const upcoming = appData.members.filter(m => new Date(m.endDate) <= future).sort((a,b) => new Date(a.endDate) - new Date(b.endDate));
+                    container.innerHTML = `<div class="chart-container"><canvas id="expirationChartCanvas"></canvas></div><div class="card"><div class="card-header"><h2>⚠️ Vencimientos Próximos (30 días)</h2></div><div class="card-body">${upcoming.length === 0 ? '<div class="empty-state">✅ No hay vencimientos próximos.</div>' : `<table><thead><tr><th>Miembro</th><th>Vence</th><th>Días</th></tr></thead><tbody>${upcoming.map(m => { const diff = Math.ceil((new Date(m.endDate) - new Date())/(1000*60*60*24)); return `<tr><td>${m.name}</td><td>${formatDate(m.endDate)}</td><td>${diff<0?'Vencido hace '+Math.abs(diff):diff}</td></tr>`; }).join('')}</tbody></table>`}</div></div>`;
                     setTimeout(() => drawExpirationChart(), 50);
                 }
             }
 
-            // ---------- GLOBAL EXPOSURES ----------
+            // Global exposures
             window.openMemberModal = openMemberModal;
             window.closeMemberModal = closeMemberModal;
             window.editMember = (id) => openMemberModal(id);
-            window.deleteMember = async (id) => {
-                if(confirm('¿Eliminar miembro? Este miembro también perderá todas sus métricas y pagos registrados.')) { await deleteMember(id); showToast('Miembro eliminado','info'); }
-            };
+            window.deleteMember = async (id) => { if(confirm('¿Eliminar miembro?')) { await deleteMember(id); showToast('Miembro eliminado','info'); } };
             window.openPaymentModal = openPaymentModal;
             window.closePaymentModal = closePaymentModal;
-            window.deletePayment = async (id) => {
-                if(confirm('¿Eliminar pago?')) { await deletePayment(id); showToast('Pago eliminado','info'); }
-            };
+            window.deletePayment = async (id) => { if(confirm('¿Eliminar pago?')) { await deletePayment(id); showToast('Pago eliminado','info'); } };
             window.openMembershipModal = openMembershipModal;
             window.closeMembershipModal = closeMembershipModal;
             window.editMembership = (id) => openMembershipModal(id);
             window.deleteMembership = async (id) => {
                 const mt = appData.memberships.find(mt=>mt.id===id); if(!mt) return;
-                if(appData.members.some(m=>m.membershipType===mt.name) || appData.payments.some(p=>p.membershipType===mt.name))
-                    return showToast('No se puede eliminar: está en uso.','error');
+                if(appData.members.some(m=>m.membershipType===mt.name) || appData.payments.some(p=>p.membershipType===mt.name)) return showToast('No se puede eliminar: está en uso.','error');
                 if(confirm(`¿Eliminar tipo "${mt.name}"?`)) { await deleteMembership(id); showToast('Tipo eliminado','info'); }
             };
             window.quickRenew = function(memberId) {
                 const m = getMemberById(memberId); if(!m) return;
-                document.getElementById('paymentMember').value = memberId;
-                document.getElementById('paymentAmount').value = m.price || getMembershipPrice(m.membershipType, m.duration);
-                document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('paymentMembershipType').value = m.membershipType;
-                document.getElementById('paymentRenew').checked = true;
+                const paymentMember = document.getElementById('paymentMember');
+                if(paymentMember) paymentMember.value = memberId;
+                const paymentAmount = document.getElementById('paymentAmount');
+                if(paymentAmount) paymentAmount.value = m.price || getMembershipPrice(m.membershipType, m.duration);
+                const paymentDate = document.getElementById('paymentDate');
+                if(paymentDate) paymentDate.value = new Date().toISOString().split('T')[0];
+                const paymentMembershipType = document.getElementById('paymentMembershipType');
+                if(paymentMembershipType) paymentMembershipType.value = m.membershipType;
+                const paymentRenew = document.getElementById('paymentRenew');
+                if(paymentRenew) paymentRenew.checked = true;
                 document.getElementById('paymentModalOverlay').style.display='flex';
                 populateMemberSelect(); populateMembershipTypeSelect();
             };
             window.logout = logout;
-            
-            // Métricas globales
             window.openMetricModal = openMetricModal;
             window.closeMetricModal = closeMetricModal;
             window.loadMemberMetrics = loadMemberMetrics;
             window.editMetric = (id) => openMetricModal(id);
-            window.deleteMetric = async (id) => {
-                if(confirm('¿Eliminar esta medición?')) { await deleteMetric(id); showToast('Medición eliminada','success'); }
-            };
+            window.deleteMetric = async (id) => { if(confirm('¿Eliminar esta medición?')) { await deleteMetric(id); showToast('Medición eliminada','success'); } };
             window.printMemberMetrics = printMemberMetrics;
 
-            // ---------- EVENT LISTENERS ----------
             function setupEventListeners() {
-                document.getElementById('loginForm').addEventListener('submit', handleLogin);
-                document.getElementById('registerForm').addEventListener('submit', handleRegister);
-                document.getElementById('memberMembershipType').addEventListener('change', updateMemberPrice);
-                document.getElementById('memberDuration').addEventListener('change', updateMemberPrice);
-                document.getElementById('memberForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const id = document.getElementById('memberId').value;
-                    const name = document.getElementById('memberName').value.trim();
-                    const email = document.getElementById('memberEmail').value.trim();
-                    const phone = document.getElementById('memberPhone').value.trim();
-                    const joinDate = document.getElementById('memberJoinDate').value;
-                    const type = document.getElementById('memberMembershipType').value;
-                    const dur = parseInt(document.getElementById('memberDuration').value);
-                    const price = parseFloat(document.getElementById('memberPrice').value)||0;
-                    if(!name||!joinDate||!type||!dur) return showToast('Complete campos requeridos','error');
-                    const start = joinDate;
-                    const endDate = new Date(start); endDate.setMonth(endDate.getMonth()+dur);
-                    const endStr = endDate.toISOString().split('T')[0];
-                    const status = getStatus(endStr);
-                    try {
-                        if(id) await updateMember(id, { name,email,phone,joinDate,membershipType:type,duration:dur,startDate:start,endDate:endStr,status,price });
-                        else await insertMember({ name,email,phone,joinDate,membershipType:type,duration:dur,startDate:start,endDate:endStr,status,price });
-                        closeMemberModal();
-                        showToast(id?'Miembro actualizado':'Miembro creado','success');
-                    } catch(err) { showToast(err.message,'error'); }
-                });
-                document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const memberId = document.getElementById('paymentMember').value;
-                    const amount = parseFloat(document.getElementById('paymentAmount').value);
-                    const date = document.getElementById('paymentDate').value;
-                    const method = document.getElementById('paymentMethod').value;
-                    const type = document.getElementById('paymentMembershipType').value;
-                    const notes = document.getElementById('paymentNotes').value;
-                    const renew = document.getElementById('paymentRenew').checked;
-                    if(!memberId||!amount||!date) return showToast('Complete campos requeridos','error');
-                    try {
-                        await insertPayment({ memberId, amount, date, paymentMethod:method, membershipType:type, notes });
-                        if(renew){
-                            const m = getMemberById(memberId);
-                            if(m){
-                                const currentEnd = new Date(m.endDate);
-                                const newStart = currentEnd > new Date() ? currentEnd : new Date(date);
-                                newStart.setMonth(newStart.getMonth() + (m.duration||1));
-                                m.endDate = newStart.toISOString().split('T')[0];
-                                m.startDate = date;
-                                m.status = getStatus(m.endDate);
-                                m.membershipType = type;
-                                m.price = amount;
-                                await updateMember(m.id, m);
+                const loginForm = document.getElementById('loginForm');
+                if(loginForm) loginForm.addEventListener('submit', handleLogin);
+                const registerForm = document.getElementById('registerForm');
+                if(registerForm) registerForm.addEventListener('submit', handleRegister);
+                const memberTypeSelect = document.getElementById('memberMembershipType');
+                if(memberTypeSelect) memberTypeSelect.addEventListener('change', updateMemberPrice);
+                const memberDurationSelect = document.getElementById('memberDuration');
+                if(memberDurationSelect) memberDurationSelect.addEventListener('change', updateMemberPrice);
+                const memberForm = document.getElementById('memberForm');
+                if(memberForm) {
+                    memberForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const id = document.getElementById('memberId').value;
+                        const name = document.getElementById('memberName').value.trim();
+                        const email = document.getElementById('memberEmail').value.trim();
+                        const phone = document.getElementById('memberPhone').value.trim();
+                        const joinDate = document.getElementById('memberJoinDate').value;
+                        const type = document.getElementById('memberMembershipType').value;
+                        const dur = parseInt(document.getElementById('memberDuration').value);
+                        const price = parseFloat(document.getElementById('memberPrice').value)||0;
+                        if(!name||!joinDate||!type||!dur) return showToast('Complete campos requeridos','error');
+                        const start = joinDate;
+                        const endDate = new Date(start); endDate.setMonth(endDate.getMonth()+dur);
+                        const endStr = endDate.toISOString().split('T')[0];
+                        const status = getStatus(endStr);
+                        try {
+                            if(id) await updateMember(id, { name,email,phone,joinDate,membershipType:type,duration:dur,startDate:start,endDate:endStr,status,price });
+                            else await insertMember({ name,email,phone,joinDate,membershipType:type,duration:dur,startDate:start,endDate:endStr,status,price });
+                            closeMemberModal();
+                            showToast(id?'Miembro actualizado':'Miembro creado','success');
+                        } catch(err) { showToast(err.message,'error'); }
+                    });
+                }
+                const paymentForm = document.getElementById('paymentForm');
+                if(paymentForm) {
+                    paymentForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const memberId = document.getElementById('paymentMember').value;
+                        const amount = parseFloat(document.getElementById('paymentAmount').value);
+                        const date = document.getElementById('paymentDate').value;
+                        const method = document.getElementById('paymentMethod').value;
+                        const type = document.getElementById('paymentMembershipType').value;
+                        const notes = document.getElementById('paymentNotes').value;
+                        const renew = document.getElementById('paymentRenew').checked;
+                        if(!memberId||!amount||!date) return showToast('Complete campos requeridos','error');
+                        try {
+                            await insertPayment({ memberId, amount, date, paymentMethod:method, membershipType:type, notes });
+                            if(renew){
+                                const m = getMemberById(memberId);
+                                if(m){
+                                    const currentEnd = new Date(m.endDate);
+                                    const newStart = currentEnd > new Date() ? currentEnd : new Date(date);
+                                    newStart.setMonth(newStart.getMonth() + (m.duration||1));
+                                    m.endDate = newStart.toISOString().split('T')[0];
+                                    m.startDate = date;
+                                    m.status = getStatus(m.endDate);
+                                    m.membershipType = type;
+                                    m.price = amount;
+                                    await updateMember(m.id, m);
+                                }
                             }
-                        }
-                        closePaymentModal();
-                        renderDashboard();
-                        showToast('Pago registrado','success');
-                    } catch(err) { showToast(err.message,'error'); }
-                });
-                document.getElementById('membershipForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const id = document.getElementById('membershipId').value;
-                    const name = document.getElementById('membershipName').value.trim();
-                    const p1 = parseFloat(document.getElementById('membershipPrice1').value);
-                    const p3 = parseFloat(document.getElementById('membershipPrice3').value);
-                    const p6 = parseFloat(document.getElementById('membershipPrice6').value);
-                    const p12 = parseFloat(document.getElementById('membershipPrice12').value);
-                    if(!name || isNaN(p1)||isNaN(p3)||isNaN(p6)||isNaN(p12)) return showToast('Complete todos los precios','error');
-                    try {
-                        if(id) await updateMembership(id, { name, prices:{1:p1,3:p3,6:p6,12:p12} });
-                        else await insertMembership({ name, prices:{1:p1,3:p3,6:p6,12:p12} });
-                        closeMembershipModal();
-                        showToast('Tipo guardado','success');
-                    } catch(err) { showToast(err.message,'error'); }
-                });
-                document.getElementById('metricForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const id = document.getElementById('metricId').value;
-                    const memberId = document.getElementById('metricMemberId').value;
-                    const date = document.getElementById('metricDate').value;
-                    const weight = parseFloat(document.getElementById('metricWeight').value) || null;
-                    const height = parseFloat(document.getElementById('metricHeight').value) || null;
-                    const chest = parseFloat(document.getElementById('metricChest').value) || null;
-                    const arm = parseFloat(document.getElementById('metricArm').value) || null;
-                    const hip = parseFloat(document.getElementById('metricHip').value) || null;
-                    const waist = parseFloat(document.getElementById('metricWaist').value) || null;
-                    const thigh = parseFloat(document.getElementById('metricThigh').value) || null;
-                    const calf = parseFloat(document.getElementById('metricCalf').value) || null;
-                    const backWidth = parseFloat(document.getElementById('metricBackWidth').value) || null;
-                    if(!date) return showToast('La fecha es requerida', 'error');
-                    try {
-                        if(id) await updateMetric(id, { memberId, date, weight, height, chest, arm, hip, waist, thigh, calf, backWidth });
-                        else await insertMetric({ memberId, date, weight, height, chest, arm, hip, waist, thigh, calf, backWidth });
-                        closeMetricModal();
-                        showToast(id?'Medición actualizada':'Medición registrada', 'success');
-                        loadMemberMetrics();
-                    } catch(err) { showToast(err.message, 'error'); }
-                });
+                            closePaymentModal();
+                            renderDashboard();
+                            showToast('Pago registrado','success');
+                        } catch(err) { showToast(err.message,'error'); }
+                    });
+                }
+                const membershipForm = document.getElementById('membershipForm');
+                if(membershipForm) {
+                    membershipForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const id = document.getElementById('membershipId').value;
+                        const name = document.getElementById('membershipName').value.trim();
+                        const p1 = parseFloat(document.getElementById('membershipPrice1').value);
+                        const p3 = parseFloat(document.getElementById('membershipPrice3').value);
+                        const p6 = parseFloat(document.getElementById('membershipPrice6').value);
+                        const p12 = parseFloat(document.getElementById('membershipPrice12').value);
+                        if(!name || isNaN(p1)||isNaN(p3)||isNaN(p6)||isNaN(p12)) return showToast('Complete todos los precios','error');
+                        try {
+                            if(id) await updateMembership(id, { name, prices:{1:p1,3:p3,6:p6,12:p12} });
+                            else await insertMembership({ name, prices:{1:p1,3:p3,6:p6,12:p12} });
+                            closeMembershipModal();
+                            showToast('Tipo guardado','success');
+                        } catch(err) { showToast(err.message,'error'); }
+                    });
+                }
+                const metricForm = document.getElementById('metricForm');
+                if(metricForm) {
+                    metricForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const id = document.getElementById('metricId').value;
+                        const memberId = document.getElementById('metricMemberId').value;
+                        const date = document.getElementById('metricDate').value;
+                        const weight = parseFloat(document.getElementById('metricWeight').value) || null;
+                        const height = parseFloat(document.getElementById('metricHeight').value) || null;
+                        const chest = parseFloat(document.getElementById('metricChest').value) || null;
+                        const arm = parseFloat(document.getElementById('metricArm').value) || null;
+                        const hip = parseFloat(document.getElementById('metricHip').value) || null;
+                        const waist = parseFloat(document.getElementById('metricWaist').value) || null;
+                        const thigh = parseFloat(document.getElementById('metricThigh').value) || null;
+                        const calf = parseFloat(document.getElementById('metricCalf').value) || null;
+                        const backWidth = parseFloat(document.getElementById('metricBackWidth').value) || null;
+                        if(!date) return showToast('La fecha es requerida', 'error');
+                        try {
+                            if(id) await updateMetric(id, { memberId, date, weight, height, chest, arm, hip, waist, thigh, calf, backWidth });
+                            else await insertMetric({ memberId, date, weight, height, chest, arm, hip, waist, thigh, calf, backWidth });
+                            closeMetricModal();
+                            showToast(id?'Medición actualizada':'Medición registrada', 'success');
+                            loadMemberMetrics();
+                        } catch(err) { showToast(err.message, 'error'); }
+                    });
+                }
                 document.querySelectorAll('.report-tab-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         document.querySelectorAll('.report-tab-btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        const report = btn.dataset.report;
-                        renderReport(report);
+                        renderReport(btn.dataset.report);
                     });
                 });
+                const memberSearch = document.getElementById('memberSearch');
+                if(memberSearch) memberSearch.addEventListener('input', () => renderMembers());
+                const memberFilterStatus = document.getElementById('memberFilterStatus');
+                if(memberFilterStatus) memberFilterStatus.addEventListener('change', () => renderMembers());
             }
 
             async function initApp() {
-                populateMemberSelect(); populateMembershipTypeSelect(); populateMetricsMemberSelect();
+                populateMemberSelect(); 
+                populateMembershipTypeSelect(); 
+                populateMetricsMemberSelect();
                 renderDashboard();
             }
 
@@ -2252,8 +2037,10 @@
                     const { data: { session } } = await supabase.auth.getSession();
                     if(session?.user) { currentUser = session.user; onAuthSuccess(); return; }
                 }
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.getElementById('appContainer').style.display = 'none';
+                const authOverlay = document.getElementById('authOverlay');
+                const appContainer = document.getElementById('appContainer');
+                if(authOverlay) authOverlay.style.display = 'flex';
+                if(appContainer) appContainer.style.display = 'none';
             }
 
             setupEventListeners();
