@@ -705,6 +705,39 @@
                 display: none;
             }
         }
+
+        /* Estilos para gráficos en reportes */
+.report-chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+
+.report-chart-container canvas {
+    max-height: 350px !important;
+    width: 100% !important;
+}
+
+#reportContent .chart-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#reportContent canvas {
+    max-height: 350px !important;
+    width: 100% !important;
+}
+
+/* Para gráficos de doughnut */
+#membershipChartCanvas {
+    max-height: 300px !important;
+    width: auto !important;
+    margin: 0 auto;
+}
     </style>
 </head>
 <body>
