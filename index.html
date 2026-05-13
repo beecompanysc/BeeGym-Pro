@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymPro - Gestión de Gimnasio</title>
+    <title>Bee-GymPro - Gestión de Gimnasio</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
@@ -397,6 +397,9 @@
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
         }
+        .modal-lg {
+            max-width: 800px;
+        }
         .modal h3 {
             margin-bottom: 20px;
             font-size: 1.2rem;
@@ -456,6 +459,61 @@
             background: var(--card-bg);
             border-radius: var(--radius);
             padding: 16px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+        }
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .metric-header h4 {
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+        .metric-date {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        .progress-trend {
+            display: inline-block;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        .trend-up {
+            color: var(--success);
+        }
+        .trend-down {
+            color: var(--danger);
+        }
+        .trend-stable {
+            color: var(--warning);
+        }
+        .member-selector {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 20px;
         }
 
         /* AUTH SCREEN */
@@ -565,6 +623,9 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
         }
         @media (max-width: 640px) {
             .sidebar {
@@ -586,7 +647,7 @@
         <div class="auth-container">
             <div class="auth-logo">
                 <div class="logo-icon">G</div>
-                <h2>Gym<span>Pro</span></h2>
+                <h2>Bee-Gym<span>Pro</span></h2>
                 <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">Sistema de Gestión</p>
             </div>
             <div class="auth-tabs">
@@ -633,7 +694,7 @@
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <div class="logo-icon">G</div>
-                <div class="logo-text">Gym<span>Pro</span></div>
+                <div class="logo-text">Bee-Gym<span>Pro</span></div>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section">Principal</div>
@@ -642,6 +703,8 @@
                 <button data-section="members"><span class="nav-icon">👥</span> Miembros</button>
                 <button data-section="payments"><span class="nav-icon">💳</span> Pagos</button>
                 <button data-section="memberships"><span class="nav-icon">🏷️</span> Membresías</button>
+                <div class="nav-section">Seguimiento</div>
+                <button data-section="metrics"><span class="nav-icon">📏</span> Métricas</button>
                 <div class="nav-section">Análisis</div>
                 <button data-section="reports"><span class="nav-icon">📋</span> Reportes</button>
             </nav>
@@ -672,6 +735,24 @@
                 <section class="section" id="section-memberships">
                     <div class="card"><div class="card-header"><h2>🏷️ Tipos de Membresía</h2><button class="btn btn-primary" onclick="openMembershipModal()">+ Nuevo Tipo</button></div><div class="card-body"><table><thead><tr><th>Nombre</th><th>1 Mes</th><th>3 Meses</th><th>6 Meses</th><th>12 Meses</th><th>Acciones</th></tr></thead><tbody id="membershipsTable"></tbody></table><div class="empty-state" id="noMembershipsMsg">🏷️ No hay tipos de membresía definidos.</div></div></div>
                 </section>
+                <section class="section" id="section-metrics">
+                    <div class="member-selector">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Seleccionar Miembro</label>
+                                <select id="metricsMemberSelect" onchange="loadMemberMetrics()">
+                                    <option value="">-- Seleccionar miembro --</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end;">
+                                <button class="btn btn-primary" onclick="openMetricModal()" style="width:100%;">+ Registrar Nueva Medición</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="metricsDisplay">
+                        <div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>
+                    </div>
+                </section>
                 <section class="section" id="section-reports">
                     <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
                         <button class="btn btn-outline active report-tab-btn" data-report="income">💰 Ingresos</button>
@@ -685,10 +766,51 @@
         </div>
     </div>
 
-    <!-- Modales (sin cambios) -->
+    <!-- Modales -->
     <div class="modal-overlay" id="memberModalOverlay" style="display:none;"><div class="modal"><h3 id="memberModalTitle">➕ Nuevo Miembro</h3><form id="memberForm"><input type="hidden" id="memberId"><div class="form-row"><div class="form-group"><label>Nombre *</label><input type="text" id="memberName" required></div><div class="form-group"><label>Email</label><input type="email" id="memberEmail"></div></div><div class="form-row"><div class="form-group"><label>Teléfono</label><input type="text" id="memberPhone"></div><div class="form-group"><label>Fecha Ingreso *</label><input type="date" id="memberJoinDate" required></div></div><div class="form-row"><div class="form-group"><label>Tipo Membresía *</label><select id="memberMembershipType" required></select></div><div class="form-group"><label>Duración *</label><select id="memberDuration" required><option value="">Seleccionar...</option><option value="1">Mensual</option><option value="3">Trimestral</option><option value="6">Semestral</option><option value="12">Anual</option></select></div></div><div class="form-group"><label>Precio ($)</label><input type="number" id="memberPrice" readonly style="font-weight:600;color:var(--accent);"></div><div class="form-actions"><button type="button" class="btn btn-outline" onclick="closeMemberModal()">Cancelar</button><button type="submit" class="btn btn-primary">💾 Guardar</button></div></form></div></div>
+    
     <div class="modal-overlay" id="paymentModalOverlay" style="display:none;"><div class="modal"><h3>💳 Registrar Pago</h3><form id="paymentForm"><input type="hidden" id="paymentId"><div class="form-group"><label>Miembro *</label><select id="paymentMember" required></select></div><div class="form-row"><div class="form-group"><label>Monto ($) *</label><input type="number" id="paymentAmount" required step="0.01"></div><div class="form-group"><label>Fecha *</label><input type="date" id="paymentDate" required></div></div><div class="form-row"><div class="form-group"><label>Método</label><select id="paymentMethod"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option></select></div><div class="form-group"><label>Tipo Membresía</label><select id="paymentMembershipType"></select></div></div><div class="form-group"><label>Notas</label><textarea id="paymentNotes" rows="2"></textarea></div><div class="form-group"><label><input type="checkbox" id="paymentRenew" checked> Renovar membresía automáticamente</label></div><div class="form-actions"><button type="button" class="btn btn-outline" onclick="closePaymentModal()">Cancelar</button><button type="submit" class="btn btn-success">✅ Registrar</button></div></form></div></div>
+    
     <div class="modal-overlay" id="membershipModalOverlay" style="display:none;"><div class="modal"><h3 id="membershipModalTitle">➕ Nuevo Tipo de Membresía</h3><form id="membershipForm"><input type="hidden" id="membershipId"><div class="form-group"><label>Nombre *</label><input type="text" id="membershipName" required></div><div class="form-row"><div class="form-group"><label>1 Mes ($)</label><input type="number" id="membershipPrice1" required step="0.01" min="0"></div><div class="form-group"><label>3 Meses ($)</label><input type="number" id="membershipPrice3" required step="0.01" min="0"></div></div><div class="form-row"><div class="form-group"><label>6 Meses ($)</label><input type="number" id="membershipPrice6" required step="0.01" min="0"></div><div class="form-group"><label>12 Meses ($)</label><input type="number" id="membershipPrice12" required step="0.01" min="0"></div></div><div class="form-actions"><button type="button" class="btn btn-outline" onclick="closeMembershipModal()">Cancelar</button><button type="submit" class="btn btn-primary">💾 Guardar</button></div></form></div></div>
+
+    <!-- Modal de Métricas -->
+    <div class="modal-overlay" id="metricModalOverlay" style="display:none;">
+        <div class="modal modal-lg">
+            <h3 id="metricModalTitle">📏 Registrar Métricas</h3>
+            <form id="metricForm">
+                <input type="hidden" id="metricId">
+                <input type="hidden" id="metricMemberId">
+                <div class="form-group">
+                    <label>Fecha de Medición *</label>
+                    <input type="date" id="metricDate" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Peso (kg)</label><input type="number" id="metricWeight" step="0.1" placeholder="kg"></div>
+                    <div class="form-group"><label>Altura (cm)</label><input type="number" id="metricHeight" step="0.1" placeholder="cm"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Pecho (cm)</label><input type="number" id="metricChest" step="0.5" placeholder="cm"></div>
+                    <div class="form-group"><label>Brazo (cm)</label><input type="number" id="metricArm" step="0.5" placeholder="cm"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cadera (cm)</label><input type="number" id="metricHip" step="0.5" placeholder="cm"></div>
+                    <div class="form-group"><label>Abdomen (cm)</label><input type="number" id="metricWaist" step="0.5" placeholder="cm"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Muslo (cm)</label><input type="number" id="metricThigh" step="0.5" placeholder="cm"></div>
+                    <div class="form-group"><label>Pantorrilla (cm)</label><input type="number" id="metricCalf" step="0.5" placeholder="cm"></div>
+                </div>
+                <div class="form-group">
+                    <label>Ancho de Espalda (cm)</label>
+                    <input type="number" id="metricBackWidth" step="0.5" placeholder="cm">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeMetricModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">💾 Guardar Medición</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         (function() {
@@ -698,7 +820,7 @@
 
             let supabase;
             let currentUser = null;
-            let appData = { memberships: [], members: [], payments: [] };
+            let appData = { memberships: [], members: [], payments: [], metrics: [] };
 
             function initSupabase() {
                 if (window.supabase && window.supabase.createClient) {
@@ -739,12 +861,13 @@
 
             async function loadAllData() {
                 if (!supabase) return;
-                const [memberships, members, payments] = await Promise.all([
+                const [memberships, members, payments, metrics] = await Promise.all([
                     fetchData('memberships'),
                     fetchData('members'),
-                    fetchData('payments')
+                    fetchData('payments'),
+                    fetchData('metrics')
                 ]);
-                // Convertir precios de memberships (price_1, price_3, etc.) a objeto prices
+                // Convertir precios de memberships
                 appData.memberships = memberships.map(mt => ({
                     id: mt.id,
                     name: mt.name,
@@ -771,6 +894,20 @@
                     paymentMethod: p.payment_method,
                     membershipType: p.membership_type,
                     notes: p.notes
+                }));
+                appData.metrics = metrics.map(m => ({
+                    id: m.id,
+                    memberId: m.member_id,
+                    date: m.date,
+                    weight: m.weight,
+                    height: m.height,
+                    chest: m.chest,
+                    arm: m.arm,
+                    hip: m.hip,
+                    waist: m.waist,
+                    thigh: m.thigh,
+                    calf: m.calf,
+                    backWidth: m.back_width
                 }));
             }
 
@@ -845,6 +982,7 @@
                     price: data.price
                 });
                 renderMembers();
+                populateMetricsMemberSelect();
             }
 
             async function updateMember(id, member) {
@@ -864,6 +1002,7 @@
                 const index = appData.members.findIndex(m => m.id === id);
                 if (index !== -1) appData.members[index] = { ...member, id };
                 renderMembers();
+                populateMetricsMemberSelect();
             }
 
             async function deleteMember(id) {
@@ -871,8 +1010,14 @@
                 if (error) throw error;
                 appData.members = appData.members.filter(m => m.id !== id);
                 appData.payments = appData.payments.filter(p => p.memberId !== id);
+                appData.metrics = appData.metrics.filter(m => m.memberId !== id);
                 renderMembers();
                 renderPayments();
+                populateMetricsMemberSelect();
+                if(document.getElementById('metricsMemberSelect').value == id) {
+                    document.getElementById('metricsMemberSelect').value = '';
+                    document.getElementById('metricsDisplay').innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
+                }
             }
 
             async function insertPayment(payment) {
@@ -903,6 +1048,72 @@
                 if (error) throw error;
                 appData.payments = appData.payments.filter(p => p.id !== id);
                 renderPayments();
+            }
+
+            // ---------- CRUD MÉTRICAS ----------
+            async function insertMetric(metric) {
+                const { data, error } = await supabase.from('metrics').insert({
+                    user_id: currentUser.id,
+                    member_id: metric.memberId,
+                    date: metric.date,
+                    weight: metric.weight,
+                    height: metric.height,
+                    chest: metric.chest,
+                    arm: metric.arm,
+                    hip: metric.hip,
+                    waist: metric.waist,
+                    thigh: metric.thigh,
+                    calf: metric.calf,
+                    back_width: metric.backWidth
+                }).select().single();
+                if (error) throw error;
+                appData.metrics.push({
+                    id: data.id,
+                    memberId: data.member_id,
+                    date: data.date,
+                    weight: data.weight,
+                    height: data.height,
+                    chest: data.chest,
+                    arm: data.arm,
+                    hip: data.hip,
+                    waist: data.waist,
+                    thigh: data.thigh,
+                    calf: data.calf,
+                    backWidth: data.back_width
+                });
+                if(document.getElementById('metricsMemberSelect').value == metric.memberId) {
+                    loadMemberMetrics();
+                }
+            }
+
+            async function updateMetric(id, metric) {
+                const { error } = await supabase.from('metrics').update({
+                    date: metric.date,
+                    weight: metric.weight,
+                    height: metric.height,
+                    chest: metric.chest,
+                    arm: metric.arm,
+                    hip: metric.hip,
+                    waist: metric.waist,
+                    thigh: metric.thigh,
+                    calf: metric.calf,
+                    back_width: metric.backWidth
+                }).eq('id', id);
+                if (error) throw error;
+                const index = appData.metrics.findIndex(m => m.id === id);
+                if (index !== -1) appData.metrics[index] = { ...metric, id };
+                if(document.getElementById('metricsMemberSelect').value == metric.memberId) {
+                    loadMemberMetrics();
+                }
+            }
+
+            async function deleteMetric(id) {
+                const { error } = await supabase.from('metrics').delete().eq('id', id);
+                if (error) throw error;
+                appData.metrics = appData.metrics.filter(m => m.id !== id);
+                if(document.getElementById('metricsMemberSelect').value) {
+                    loadMemberMetrics();
+                }
             }
 
             // ---------- TOAST ----------
@@ -982,7 +1193,7 @@
             }
 
             // ---------- NAVIGATION ----------
-            const titles = { dashboard:'📊 Dashboard', members:'👥 Miembros', payments:'💳 Pagos', memberships:'🏷️ Membresías', reports:'📋 Reportes' };
+            const titles = { dashboard:'📊 Dashboard', members:'👥 Miembros', payments:'💳 Pagos', memberships:'🏷️ Membresías', metrics:'📏 Métricas', reports:'📋 Reportes' };
             function setupNavigation() {
                 document.querySelectorAll('.sidebar-nav button[data-section]').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -996,6 +1207,7 @@
                         if(sec === 'members') renderMembers();
                         if(sec === 'payments') renderPayments();
                         if(sec === 'memberships') renderMemberships();
+                        if(sec === 'metrics') renderMetricsSection();
                         if(sec === 'reports') renderReport('income');
                     });
                 });
@@ -1026,7 +1238,7 @@
                     tbody.innerHTML = alertList.map(m=>{
                         const end = new Date(m.endDate); const diff = Math.ceil((end-today)/(1000*60*60*24));
                         const rowCls = diff<0?'row-danger':'row-warning';
-                        return `<tr class="${rowCls}"><td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td>${diff<0?'Vencido hace '+Math.abs(diff)+' días':diff+' días'}</td><td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td><td><button class="btn btn-sm btn-warning" onclick="quickRenew('${m.id}')">🔄</button></td></tr>`;
+                        return `<tr class="${rowCls}"><tr>${m.name}</td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td><td>${diff<0?'Vencido hace '+Math.abs(diff)+' días':diff+' días'}</td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td><button class="btn btn-sm btn-warning" onclick="quickRenew('${m.id}')">🔄</button></tr>`;
                     }).join('');
                 }
                 const recent = [...payments].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
@@ -1089,6 +1301,12 @@
                 const sel = document.getElementById('paymentMember');
                 sel.innerHTML = '<option value="">Seleccionar miembro...</option>'+appData.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
             }
+            
+            function populateMetricsMemberSelect(){
+                const sel = document.getElementById('metricsMemberSelect');
+                sel.innerHTML = '<option value="">-- Seleccionar miembro --</option>'+appData.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+            }
+            
             function populateMembershipTypeSelect(){
                 const selMember = document.getElementById('memberMembershipType');
                 const selPayment = document.getElementById('paymentMembershipType');
@@ -1144,222 +1362,397 @@
             }
             function closeMembershipModal(){ document.getElementById('membershipModalOverlay').style.display='none'; }
 
+            // ---------- MÉTRICAS ----------
+            function renderMetricsSection() {
+                populateMetricsMemberSelect();
+                const selectedMember = document.getElementById('metricsMemberSelect').value;
+                if(selectedMember) {
+                    loadMemberMetrics();
+                } else {
+                    document.getElementById('metricsDisplay').innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
+                }
+            }
+
+            function loadMemberMetrics() {
+                const memberId = document.getElementById('metricsMemberSelect').value;
+                if(!memberId) {
+                    document.getElementById('metricsDisplay').innerHTML = '<div class="empty-state">👤 Selecciona un miembro para ver sus métricas</div>';
+                    return;
+                }
+                const member = getMemberById(memberId);
+                const memberMetrics = appData.metrics.filter(m => m.memberId === memberId).sort((a,b) => new Date(b.date) - new Date(a.date));
+                
+                if(memberMetrics.length === 0) {
+                    document.getElementById('metricsDisplay').innerHTML = `
+                        <div class="empty-state">
+                            📏 No hay métricas registradas para ${member?.name}<br>
+                            <button class="btn btn-primary btn-sm" onclick="openMetricModal()" style="margin-top:12px;">+ Registrar Primera Medición</button>
+                        </div>`;
+                    return;
+                }
+                
+                const latest = memberMetrics[0];
+                const previous = memberMetrics[1];
+                
+                const getTrend = (current, previous) => {
+                    if(!previous || previous === 0 || current === 0) return { class: '', icon: '' };
+                    if(current > previous) return { class: 'trend-up', icon: '📈' };
+                    if(current < previous) return { class: 'trend-down', icon: '📉' };
+                    return { class: 'trend-stable', icon: '➡️' };
+                };
+                
+                const formatMetric = (value, unit, current, prev) => {
+                    if(!value) return '--';
+                    const trend = getTrend(current, prev);
+                    return `<span class="metric-value">${value} ${unit}</span> <span class="progress-trend ${trend.class}">${trend.icon}</span>`;
+                };
+                
+                const metricsHtml = `
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>⚖️ Peso</h4></div>
+                            ${formatMetric(latest.weight, 'kg', latest.weight, previous?.weight)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>📏 Altura</h4></div>
+                            ${formatMetric(latest.height, 'cm', latest.height, previous?.height)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>💪 Pecho</h4></div>
+                            ${formatMetric(latest.chest, 'cm', latest.chest, previous?.chest)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>💪 Brazo</h4></div>
+                            ${formatMetric(latest.arm, 'cm', latest.arm, previous?.arm)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>🦵 Cadera</h4></div>
+                            ${formatMetric(latest.hip, 'cm', latest.hip, previous?.hip)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>🎯 Abdomen</h4></div>
+                            ${formatMetric(latest.waist, 'cm', latest.waist, previous?.waist)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>🦵 Muslo</h4></div>
+                            ${formatMetric(latest.thigh, 'cm', latest.thigh, previous?.thigh)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>🦵 Pantorrilla</h4></div>
+                            ${formatMetric(latest.calf, 'cm', latest.calf, previous?.calf)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header"><h4>📐 Ancho Espalda</h4></div>
+                            ${formatMetric(latest.backWidth, 'cm', latest.backWidth, previous?.backWidth)}
+                            <div class="metric-date">Última: ${formatDate(latest.date)}</div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header">
+                            <h2>📋 Historial de Mediciones</h2>
+                            <button class="btn btn-primary btn-sm" onclick="openMetricModal()">+ Nueva Medición</button>
+                        </div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr><th>Fecha</th><th>Peso (kg)</th><th>Altura (cm)</th><th>Pecho (cm)</th><th>Brazo (cm)</th><th>Cadera (cm)</th><th>Abdomen (cm)</th><th>Muslo (cm)</th><th>Pantorrilla (cm)</th><th>Espalda (cm)</th><th>Acciones</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${memberMetrics.map(m => `
+                                        <tr>
+                                            <td>${formatDate(m.date)}</td>
+                                            <td>${m.weight || '-'}</td>
+                                            <td>${m.height || '-'}</td>
+                                            <td>${m.chest || '-'}</td>
+                                            <td>${m.arm || '-'}</td>
+                                            <td>${m.hip || '-'}</td>
+                                            <td>${m.waist || '-'}</td>
+                                            <td>${m.thigh || '-'}</td>
+                                            <td>${m.calf || '-'}</td>
+                                            <td>${m.backWidth || '-'}</td>
+                                            <td><button class="btn btn-sm btn-info" onclick="editMetric('${m.id}')">✏️</button> <button class="btn btn-sm btn-danger" onclick="deleteMetric('${m.id}')">🗑️</button></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('metricsDisplay').innerHTML = metricsHtml;
+            }
+
+            function openMetricModal(metricId = null) {
+                const memberId = document.getElementById('metricsMemberSelect').value;
+                if(!memberId && !metricId) {
+                    showToast('Primero selecciona un miembro', 'error');
+                    return;
+                }
+                document.getElementById('metricMemberId').value = metricId ? getMetricById(metricId)?.memberId || memberId : memberId;
+                document.getElementById('metricId').value = '';
+                document.getElementById('metricDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('metricWeight').value = '';
+                document.getElementById('metricHeight').value = '';
+                document.getElementById('metricChest').value = '';
+                document.getElementById('metricArm').value = '';
+                document.getElementById('metricHip').value = '';
+                document.getElementById('metricWaist').value = '';
+                document.getElementById('metricThigh').value = '';
+                document.getElementById('metricCalf').value = '';
+                document.getElementById('metricBackWidth').value = '';
+                document.getElementById('metricModalTitle').textContent = '📏 Registrar Métricas';
+                
+                if(metricId) {
+                    const metric = getMetricById(metricId);
+                    if(metric) {
+                        document.getElementById('metricId').value = metric.id;
+                        document.getElementById('metricDate').value = metric.date;
+                        document.getElementById('metricWeight').value = metric.weight || '';
+                        document.getElementById('metricHeight').value = metric.height || '';
+                        document.getElementById('metricChest').value = metric.chest || '';
+                        document.getElementById('metricArm').value = metric.arm || '';
+                        document.getElementById('metricHip').value = metric.hip || '';
+                        document.getElementById('metricWaist').value = metric.waist || '';
+                        document.getElementById('metricThigh').value = metric.thigh || '';
+                        document.getElementById('metricCalf').value = metric.calf || '';
+                        document.getElementById('metricBackWidth').value = metric.backWidth || '';
+                        document.getElementById('metricModalTitle').textContent = '✏️ Editar Métricas';
+                    }
+                }
+                document.getElementById('metricModalOverlay').style.display = 'flex';
+            }
+
+            function getMetricById(id) {
+                return appData.metrics.find(m => m.id === id);
+            }
+
+            function closeMetricModal() {
+                document.getElementById('metricModalOverlay').style.display = 'none';
+            }
+
             // ---------- CHARTS ----------
-let chartInstances = {};
+            let chartInstances = {};
 
-function destroyCharts() {
-    Object.values(chartInstances).forEach(c => c.destroy());
-    chartInstances = {};
-}
-
-function drawIncomeChart(monthlyData) {
-    const months = Object.keys(monthlyData).sort();
-    const totals = months.map(m => monthlyData[m].total);
-    const ctx = document.getElementById('incomeChartCanvas')?.getContext('2d');
-    if (!ctx) return;
-    if (chartInstances.income) chartInstances.income.destroy();
-    chartInstances.income = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: months.map(m => {
-                const [y, mo] = m.split('-');
-                return new Date(y, mo - 1).toLocaleDateString('es', { month: 'short', year: 'numeric' });
-            }),
-            datasets: [{
-                label: 'Ingresos ($)',
-                data: totals,
-                borderColor: '#f04e30',
-                backgroundColor: 'rgba(240,78,48,0.1)',
-                borderWidth: 3,
-                pointBackgroundColor: '#fff',
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                tension: 0.3,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { labels: { color: '#a0aec0' } } },
-            scales: {
-                y: { beginAtZero: true, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
-                x: { ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } }
+            function destroyCharts() {
+                Object.values(chartInstances).forEach(c => c.destroy());
+                chartInstances = {};
             }
-        }
-    });
-}
 
-function drawMembershipChart() {
-    const active = appData.members.filter(m => m.status === 'active').length;
-    const expiring = appData.members.filter(m => m.status === 'expiring').length;
-    const expired = appData.members.filter(m => m.status === 'expired').length;
-    const ctx = document.getElementById('membershipChartCanvas')?.getContext('2d');
-    if (!ctx) return;
-    if (chartInstances.membership) chartInstances.membership.destroy();
-    chartInstances.membership = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Activos', 'Por Vencer', 'Vencidos'],
-            datasets: [{
-                data: [active, expiring, expired],
-                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                borderColor: '#1c1c30',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom', labels: { color: '#a0aec0', padding: 20 } } }
-        }
-    });
-}
-
-function drawExpirationChart() {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const future = new Date(today); future.setDate(future.getDate() + 30);
-    const weeks = {};
-    appData.members.forEach(m => {
-        const end = new Date(m.endDate);
-        if (end <= future) {
-            const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-            const week = Math.ceil(diffDays / 7);
-            const label = week <= 0 ? 'Vencido' : `Semana ${week}`;
-            if (!weeks[label]) weeks[label] = 0;
-            weeks[label]++;
-        }
-    });
-    const labels = Object.keys(weeks).sort((a, b) => {
-        if (a === 'Vencido') return -1;
-        if (b === 'Vencido') return 1;
-        return parseInt(a) - parseInt(b);
-    });
-    const data = labels.map(l => weeks[l]);
-    const ctx = document.getElementById('expirationChartCanvas')?.getContext('2d');
-    if (!ctx) return;
-    if (chartInstances.expiration) chartInstances.expiration.destroy();
-    chartInstances.expiration = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Membresías por vencer',
-                data: data,
-                backgroundColor: labels.map(l => l === 'Vencido' ? '#ef4444' : '#f59e0b'),
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#a0aec0' }, grid: { color: '#2a2a40' } },
-                x: { ticks: { color: '#a0aec0' }, grid: { display: false } }
+            function drawIncomeChart(monthlyData) {
+                const months = Object.keys(monthlyData).sort();
+                const totals = months.map(m => monthlyData[m].total);
+                const ctx = document.getElementById('incomeChartCanvas')?.getContext('2d');
+                if (!ctx) return;
+                if (chartInstances.income) chartInstances.income.destroy();
+                chartInstances.income = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: months.map(m => {
+                            const [y, mo] = m.split('-');
+                            return new Date(y, mo - 1).toLocaleDateString('es', { month: 'short', year: 'numeric' });
+                        }),
+                        datasets: [{
+                            label: 'Ingresos ($)',
+                            data: totals,
+                            borderColor: '#f04e30',
+                            backgroundColor: 'rgba(240,78,48,0.1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#a0aec0' } } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } },
+                            x: { ticks: { color: '#a0aec0' }, grid: { color: '#2a2a40' } }
+                        }
+                    }
+                });
             }
-        }
-    });
-}
 
-function renderReport(type) {
-    if (!appData.members || !appData.payments) return;
-    destroyCharts();
-    const container = document.getElementById('reportContent');
-    let html = '';
+            function drawMembershipChart() {
+                const active = appData.members.filter(m => m.status === 'active').length;
+                const expiring = appData.members.filter(m => m.status === 'expiring').length;
+                const expired = appData.members.filter(m => m.status === 'expired').length;
+                const ctx = document.getElementById('membershipChartCanvas')?.getContext('2d');
+                if (!ctx) return;
+                if (chartInstances.membership) chartInstances.membership.destroy();
+                chartInstances.membership = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Activos', 'Por Vencer', 'Vencidos'],
+                        datasets: [{
+                            data: [active, expiring, expired],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                            borderColor: '#1c1c30',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#a0aec0', padding: 20 } } }
+                    }
+                });
+            }
 
-    if (type === 'income') {
-        const monthly = {};
-        appData.payments.forEach(p => {
-            const d = new Date(p.date);
-            const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-            if (!monthly[key]) monthly[key] = { total: 0, count: 0 };
-            monthly[key].total += p.amount;
-            monthly[key].count++;
-        });
+            function drawExpirationChart() {
+                const today = new Date(); today.setHours(0,0,0,0);
+                const future = new Date(today); future.setDate(future.getDate() + 30);
+                const weeks = {};
+                appData.members.forEach(m => {
+                    const end = new Date(m.endDate);
+                    if (end <= future) {
+                        const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+                        const week = Math.ceil(diffDays / 7);
+                        const label = week <= 0 ? 'Vencido' : `Semana ${week}`;
+                        if (!weeks[label]) weeks[label] = 0;
+                        weeks[label]++;
+                    }
+                });
+                const labels = Object.keys(weeks).sort((a, b) => {
+                    if (a === 'Vencido') return -1;
+                    if (b === 'Vencido') return 1;
+                    return parseInt(a) - parseInt(b);
+                });
+                const data = labels.map(l => weeks[l]);
+                const ctx = document.getElementById('expirationChartCanvas')?.getContext('2d');
+                if (!ctx) return;
+                if (chartInstances.expiration) chartInstances.expiration.destroy();
+                chartInstances.expiration = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Membresías por vencer',
+                            data: data,
+                            backgroundColor: labels.map(l => l === 'Vencido' ? '#ef4444' : '#f59e0b'),
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1, color: '#a0aec0' }, grid: { color: '#2a2a40' } },
+                            x: { ticks: { color: '#a0aec0' }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
 
-        html = `
-            <div class="chart-container">
-                <canvas id="incomeChartCanvas" style="max-height: 350px;"></canvas>
-            </div>
-            <div class="card">
-                <div class="card-header"><h2>💰 Ingresos por Mes</h2></div>
-                <div class="card-body">
-                    ${Object.keys(monthly).length === 0 ? '<div class="empty-state">📭 No hay ingresos registrados.</div>' : `
-                    <table>
-                        <thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead>
-                        <tbody>
-                            ${Object.entries(monthly).sort((a,b) => b[0].localeCompare(a[0])).map(([k,v]) =>
-                                `<tr><td>${k}</td><td>${v.count}</td><td>${formatCurrency(v.total)}</td></tr>`
-                            ).join('')}
-                        </tbody>
-                    </table>`}
-                </div>
-            </div>`;
-        container.innerHTML = html;
-        setTimeout(() => drawIncomeChart(monthly), 50);
-    }
-    else if (type === 'membership') {
-        html = `
-            <div class="chart-container">
-                <canvas id="membershipChartCanvas" style="max-height: 350px;"></canvas>
-            </div>
-            <div class="card">
-                <div class="card-header"><h2>📋 Estado de Membresías</h2></div>
-                <div class="card-body">
-                    ${appData.members.length === 0 ? '<div class="empty-state">👤 No hay miembros registrados.</div>' : `
-                    <table>
-                        <thead><tr><th>Miembro</th><th>Tipo</th><th>Vence</th><th>Estado</th></tr></thead>
-                        <tbody>
-                            ${appData.members.map(m =>
-                                `<tr class="${m.status==='expired'?'row-danger':m.status==='expiring'?'row-warning':''}">
-                                    <td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td>
-                                    <td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td>
-                                </tr>`
-                            ).join('')}
-                        </tbody>
-                    </table>`}
-                </div>
-            </div>`;
-        container.innerHTML = html;
-        setTimeout(() => drawMembershipChart(), 50);
-    }
-    else if (type === 'expiration') {
-        const future = new Date();
-        future.setDate(future.getDate() + 30);
-        const upcoming = appData.members.filter(m => new Date(m.endDate) <= future)
-            .sort((a,b) => new Date(a.endDate) - new Date(b.endDate));
+            function renderReport(type) {
+                if (!appData.members || !appData.payments) return;
+                destroyCharts();
+                const container = document.getElementById('reportContent');
+                let html = '';
 
-        html = `
-            <div class="chart-container">
-                <canvas id="expirationChartCanvas" style="max-height: 350px;"></canvas>
-            </div>
-            <div class="card">
-                <div class="card-header"><h2>⚠️ Vencimientos Próximos (30 días)</h2></div>
-                <div class="card-body">
-                    ${upcoming.length === 0 ? '<div class="empty-state">✅ No hay vencimientos próximos.</div>' : `
-                    <table>
-                        <thead><tr><th>Miembro</th><th>Vence</th><th>Días</th></tr></thead>
-                        <tbody>
-                            ${upcoming.map(m => {
-                                const diff = Math.ceil((new Date(m.endDate) - new Date()) / (1000*60*60*24));
-                                return `<tr class="${diff<0?'row-danger':'row-warning'}">
-                                    <td>${m.name}</td><td>${formatDate(m.endDate)}</td>
-                                    <td>${diff<0?'Vencido hace '+Math.abs(diff):diff}</td>
-                                </tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>`}
-                </div>
-            </div>`;
-        container.innerHTML = html;
-        setTimeout(() => drawExpirationChart(), 50);
-    }
-}
+                if (type === 'income') {
+                    const monthly = {};
+                    appData.payments.forEach(p => {
+                        const d = new Date(p.date);
+                        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                        if (!monthly[key]) monthly[key] = { total: 0, count: 0 };
+                        monthly[key].total += p.amount;
+                        monthly[key].count++;
+                    });
+
+                    html = `
+                        <div class="chart-container">
+                            <canvas id="incomeChartCanvas" style="max-height: 350px;"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h2>💰 Ingresos por Mes</h2></div>
+                            <div class="card-body">
+                                ${Object.keys(monthly).length === 0 ? '<div class="empty-state">📭 No hay ingresos registrados.</div>' : `
+                                <table>
+                                    <thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead>
+                                    <tbody>
+                                        ${Object.entries(monthly).sort((a,b) => b[0].localeCompare(a[0])).map(([k,v]) =>
+                                            `<tr><td>${k}</td><td>${v.count}</td><td>${formatCurrency(v.total)}</td></tr>`
+                                        ).join('')}
+                                    </tbody>
+                                </table>`}
+                            </div>
+                        </div>`;
+                    container.innerHTML = html;
+                    setTimeout(() => drawIncomeChart(monthly), 50);
+                }
+                else if (type === 'membership') {
+                    html = `
+                        <div class="chart-container">
+                            <canvas id="membershipChartCanvas" style="max-height: 350px;"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h2>📋 Estado de Membresías</h2></div>
+                            <div class="card-body">
+                                ${appData.members.length === 0 ? '<div class="empty-state">👤 No hay miembros registrados.</div>' : `
+                                <table>
+                                    <thead><tr><th>Miembro</th><th>Tipo</th><th>Vence</th><th>Estado</th></tr></thead>
+                                    <tbody>
+                                        ${appData.members.map(m =>
+                                            `<tr class="${m.status==='expired'?'row-danger':m.status==='expiring'?'row-warning':''}">
+                                                <td>${m.name}</td><td>${m.membershipType}</td><td>${formatDate(m.endDate)}</td>
+                                                <td><span class="status-badge ${getStatusClass(m.status)}">${getStatusLabel(m.status)}</span></td>
+                                            </tr>`
+                                        ).join('')}
+                                    </tbody>
+                                </table>`}
+                            </div>
+                        </div>`;
+                    container.innerHTML = html;
+                    setTimeout(() => drawMembershipChart(), 50);
+                }
+                else if (type === 'expiration') {
+                    const future = new Date();
+                    future.setDate(future.getDate() + 30);
+                    const upcoming = appData.members.filter(m => new Date(m.endDate) <= future)
+                        .sort((a,b) => new Date(a.endDate) - new Date(b.endDate));
+
+                    html = `
+                        <div class="chart-container">
+                            <canvas id="expirationChartCanvas" style="max-height: 350px;"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><h2>⚠️ Vencimientos Próximos (30 días)</h2></div>
+                            <div class="card-body">
+                                ${upcoming.length === 0 ? '<div class="empty-state">✅ No hay vencimientos próximos.</div>' : `
+                                <table>
+                                    <thead><tr><th>Miembro</th><th>Vence</th><th>Días</th></tr></thead>
+                                    <tbody>
+                                        ${upcoming.map(m => {
+                                            const diff = Math.ceil((new Date(m.endDate) - new Date()) / (1000*60*60*24));
+                                            return `<tr class="${diff<0?'row-danger':'row-warning'}">
+                                                <td>${m.name}</td><td>${formatDate(m.endDate)}</td>
+                                                <td>${diff<0?'Vencido hace '+Math.abs(diff):diff}</td>
+                                            </tr>`;
+                                        }).join('')}
+                                    </tbody>
+                                </table>`}
+                            </div>
+                        </div>`;
+                    container.innerHTML = html;
+                    setTimeout(() => drawExpirationChart(), 50);
+                }
+            }
 
             // ---------- GLOBAL EXPOSURES ----------
             window.openMemberModal = openMemberModal;
             window.closeMemberModal = closeMemberModal;
             window.editMember = (id) => openMemberModal(id);
             window.deleteMember = async (id) => {
-                if(confirm('¿Eliminar miembro?')) { await deleteMember(id); showToast('Miembro eliminado','info'); }
+                if(confirm('¿Eliminar miembro? Este miembro también perderá todas sus métricas y pagos registrados.')) { await deleteMember(id); showToast('Miembro eliminado','info'); }
             };
             window.openPaymentModal = openPaymentModal;
             window.closePaymentModal = closePaymentModal;
@@ -1386,6 +1779,15 @@ function renderReport(type) {
                 populateMemberSelect(); populateMembershipTypeSelect();
             };
             window.logout = logout;
+            
+            // Métricas globales
+            window.openMetricModal = openMetricModal;
+            window.closeMetricModal = closeMetricModal;
+            window.loadMemberMetrics = loadMemberMetrics;
+            window.editMetric = (id) => openMetricModal(id);
+            window.deleteMetric = async (id) => {
+                if(confirm('¿Eliminar esta medición?')) { await deleteMetric(id); showToast('Medición eliminada','success'); }
+            };
 
             // ---------- EVENT LISTENERS ----------
             function setupEventListeners() {
@@ -1462,12 +1864,42 @@ function renderReport(type) {
                         showToast('Tipo guardado','success');
                     } catch(err) { showToast(err.message,'error'); }
                 });
-                // ... otros listeners ...
+                document.getElementById('metricForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const id = document.getElementById('metricId').value;
+                    const memberId = document.getElementById('metricMemberId').value;
+                    const date = document.getElementById('metricDate').value;
+                    const weight = parseFloat(document.getElementById('metricWeight').value) || null;
+                    const height = parseFloat(document.getElementById('metricHeight').value) || null;
+                    const chest = parseFloat(document.getElementById('metricChest').value) || null;
+                    const arm = parseFloat(document.getElementById('metricArm').value) || null;
+                    const hip = parseFloat(document.getElementById('metricHip').value) || null;
+                    const waist = parseFloat(document.getElementById('metricWaist').value) || null;
+                    const thigh = parseFloat(document.getElementById('metricThigh').value) || null;
+                    const calf = parseFloat(document.getElementById('metricCalf').value) || null;
+                    const backWidth = parseFloat(document.getElementById('metricBackWidth').value) || null;
+                    if(!date) return showToast('La fecha es requerida', 'error');
+                    try {
+                        if(id) await updateMetric(id, { memberId, date, weight, height, chest, arm, hip, waist, thigh, calf, backWidth });
+                        else await insertMetric({ memberId, date, weight, height, chest, arm, hip, waist, thigh, calf, backWidth });
+                        closeMetricModal();
+                        showToast(id?'Medición actualizada':'Medición registrada', 'success');
+                        loadMemberMetrics();
+                    } catch(err) { showToast(err.message, 'error'); }
+                });
+                document.querySelectorAll('.report-tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.report-tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const report = btn.dataset.report;
+                        renderReport(report);
+                    });
+                });
             }
 
             async function initApp() {
                 document.getElementById('currentDate').textContent = new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-                populateMemberSelect(); populateMembershipTypeSelect();
+                populateMemberSelect(); populateMembershipTypeSelect(); populateMetricsMemberSelect();
                 renderDashboard();
             }
 
